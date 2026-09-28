@@ -1,0 +1,1583 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Roomly — find a free classroom in the IST building right now, from real timetable data.">
+<title>Roomly — Find a room. Find your space.</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Cpath d='M17 2C10.4 2 5 7.2 5 13.7 5 22.5 17 32 17 32s12-9.5 12-18.3C29 7.2 23.6 2 17 2Z' fill='%231E4D3B'/%3E%3Crect x='12.5' y='8.5' width='9' height='11' rx='1.6' fill='none' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* ROOMLY — styles */
+html,body{margin:0}
+img{max-width:100%}
+:root{
+  --bg:#F5F4F0; --surface:#FFFFFF; --surface-2:#FAFAF7; --sunk:#F0EFEA; --line:#E6E4DE; --line-2:#EFEEE9;
+  --ink:#1C2220; --ink-2:#59625E; --ink-3:#8A918E;
+  --pri:#1E4D3B; --pri-ink:#FFFFFF; --pri-soft:#E5EFE9; --pri-hover:#255C47;
+  --free:#2A9A5E; --free-soft:#E3F3E9; --free-map:#B9E2C8;
+  --soon:#C27A0E; --soon-soft:#FCF0DA; --soon-map:#F3D39A;
+  --busy:#CF5A4F; --busy-soft:#FBE6E3; --busy-map:#F0B8B1;
+  --unk:#959C99; --unk-soft:#EFF0ED; --unk-map:#DEE0DC;
+  --sel:#1E4D3B;
+  --ai:#4966F5; --ai-soft:#EEF1FF;
+  --wa:#1F9D55; --wa-soft:#E5F5EB; --wa-ink:#15773F;
+  --wall:#FCFCFA; --slab:#D9DAD3; --corr:#ECECE6; --ground:#E7E6E0; --fac:#C9CDC8;
+  --shadow:0 1px 2px rgba(22,32,27,.04),0 6px 20px rgba(22,32,27,.05);
+  --shadow-lg:0 12px 40px rgba(22,32,27,.16);
+  --font:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#101412; --surface:#171C1A; --surface-2:#1B211F; --sunk:#131816; --line:#29302D; --line-2:#222926;
+    --ink:#E6EBE8; --ink-2:#A2ACA8; --ink-3:#727C78;
+    --pri:#2E7A57; --pri-ink:#FFFFFF; --pri-soft:#1C2F27; --pri-hover:#358A63;
+    --free:#5CC98D; --free-soft:#163022; --free-map:#2F6C4A;
+    --soon:#E6A84C; --soon-soft:#33280F; --soon-map:#8C6425;
+    --busy:#EE8D83; --busy-soft:#3A1F1C; --busy-map:#8E443D;
+    --unk:#7A8480; --unk-soft:#222826; --unk-map:#394240;
+    --sel:#8FE0B5;
+    --ai:#93A6FF; --ai-soft:#1C2241;
+    --wa:#25A55C; --wa-soft:#153020; --wa-ink:#74D8A0;
+    --wall:#3A4340; --slab:#252C29; --corr:#2D3532; --ground:#1B211F; --fac:#47514D;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.22);
+    --shadow-lg:0 16px 44px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#101412; --surface:#171C1A; --surface-2:#1B211F; --sunk:#131816; --line:#29302D; --line-2:#222926;
+  --ink:#E6EBE8; --ink-2:#A2ACA8; --ink-3:#727C78;
+  --pri:#2E7A57; --pri-ink:#FFFFFF; --pri-soft:#1C2F27; --pri-hover:#358A63;
+  --free:#5CC98D; --free-soft:#163022; --free-map:#2F6C4A;
+  --soon:#E6A84C; --soon-soft:#33280F; --soon-map:#8C6425;
+  --busy:#EE8D83; --busy-soft:#3A1F1C; --busy-map:#8E443D;
+  --unk:#7A8480; --unk-soft:#222826; --unk-map:#394240;
+  --sel:#8FE0B5;
+  --ai:#93A6FF; --ai-soft:#1C2241;
+  --wa:#25A55C; --wa-soft:#153020; --wa-ink:#74D8A0;
+  --wall:#3A4340; --slab:#252C29; --corr:#2D3532; --ground:#1B211F; --fac:#47514D;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.22);
+  --shadow-lg:0 16px 44px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ai);outline-offset:2px;border-radius:8px}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+svg.i.sm{width:15px;height:15px}
+svg.i.lg{width:22px;height:22px}
+.muted{color:var(--ink-2)} .faint{color:var(--ink-3)}
+.eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
+.app.collapsed{grid-template-columns:76px minmax(0,1fr)}
+.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;padding:20px 14px;border-right:1px solid var(--line);background:var(--surface-2);overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:2px 8px 18px}
+.logo{width:34px;height:34px;flex:none}
+.brand b{display:block;font-size:19px;font-weight:800;letter-spacing:.04em}
+.brand small{display:block;font-size:11.5px;color:var(--ink-3);margin-top:-1px}
+.collapse{margin-left:auto;width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--ink-3)}
+.collapse:hover{background:var(--sunk);color:var(--ink)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;font-weight:600;font-size:14.5px;color:var(--ink-2);text-align:left;transition:background .15s,color .15s}
+.nav button:hover{background:var(--sunk);color:var(--ink)}
+.nav button[aria-current="page"]{background:var(--pri-soft);color:var(--pri)}
+:root[data-theme="dark"] .nav button[aria-current="page"]{color:var(--sel)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .nav button[aria-current="page"]{color:var(--sel)}}
+.nav .count{margin-left:auto;font-size:11.5px;font-weight:700;background:var(--free-soft);color:var(--free);border-radius:999px;padding:1px 8px}
+.campus{margin:14px 0 6px;padding:12px;border:1px solid var(--line);border-radius:12px;display:flex;gap:10px;align-items:center;background:var(--surface)}
+.campus .ic{width:34px;height:34px;border-radius:9px;background:var(--sunk);display:grid;place-items:center;color:var(--ink-2);flex:none}
+.campus b{display:block;font-size:13px}.campus span{font-size:12px;color:var(--ink-3)}
+.side .spacer{flex:1}
+.profile{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-align:left;width:100%}
+.profile b{display:block;font-size:13.5px}.profile span{font-size:12px;color:var(--ink-3)}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;flex:none;background:var(--pri)}
+.av.sm{width:30px;height:30px;font-size:11.5px}
+.collapsed .brand div,.collapsed .nav span,.collapsed .nav .count,.collapsed .campus div,.collapsed .profile div,.collapsed .profile .chev{display:none}
+.collapsed .brand{padding-inline:4px;flex-direction:column}
+.collapsed .collapse{margin:6px auto 0}
+.collapsed .nav button{justify-content:center;padding:11px 0}
+.collapsed .campus{justify-content:center;padding:8px}
+.collapsed .profile{justify-content:center;padding:8px}
+
+.main{min-width:0;padding:22px 28px 60px;display:flex;flex-direction:column;gap:20px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 20px}
+.hello h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.hello p{margin:3px 0 0;color:var(--ink-2);font-size:15px}
+.tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.livepill{display:flex;align-items:center;gap:9px;padding:6px 4px}
+.livepill b{display:block;font-size:13px;font-weight:700}.livepill span{display:block;font-size:11.5px;color:var(--ink-3)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--free);flex:none;box-shadow:0 0 0 0 color-mix(in srgb,var(--free) 55%,transparent);animation:pulse 2.2s infinite}
+.dot.preview{background:var(--soon);animation:none}
+@keyframes pulse{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.timebox{padding:8px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-align:left;min-width:150px;transition:border-color .15s}
+.timebox:hover{border-color:var(--ink-3)}
+.timebox span{display:block;font-size:12px;color:var(--ink-3)}.timebox b{display:block;font-size:14.5px;font-weight:700}
+.iconbtn{position:relative;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink-2)}
+.iconbtn:hover{color:var(--ink);border-color:var(--ink-3)}
+.iconbtn .badge{position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--busy);border:2px solid var(--surface)}
+.pop{position:absolute;z-index:40;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:14px;width:min(340px,calc(100vw - 24px));animation:popin .16s ease-out}
+@keyframes popin{from{opacity:0;transform:translateY(-4px) scale(.98)}}
+.pop h4{margin:0 0 8px;font-size:13px}
+.notif{display:flex;gap:10px;padding:9px 4px;border-top:1px solid var(--line-2);font-size:13px}
+.notif:first-of-type{border-top:0}
+.notif .ni{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;flex:none;background:var(--sunk);color:var(--ink-2)}
+.notif .ni.warn{background:var(--soon-soft);color:var(--soon)} .notif .ni.ok{background:var(--free-soft);color:var(--free)}
+
+/* ---------- common ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.pad{padding:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:11px 18px;font-weight:700;font-size:14px;transition:background .15s,transform .1s,border-color .15s;white-space:nowrap}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--pri);color:var(--pri-ink)} .btn.pri:hover{background:var(--pri-hover)}
+.btn.sec{background:var(--surface);border:1px solid var(--line);color:var(--ink)} .btn.sec:hover{border-color:var(--ink-3)}
+.btn.soft{background:var(--sunk);color:var(--ink)} .btn.soft:hover{background:var(--line-2)}
+.btn.wa{background:var(--wa-soft);color:var(--wa-ink);border:1px solid color-mix(in srgb,var(--wa) 30%,transparent)} .btn.wa:hover{border-color:var(--wa)}
+.btn.wa-solid{background:var(--wa);color:#fff;text-decoration:none} .btn.wa-solid:hover{filter:brightness(1.06)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:10px}
+.btn.block{width:100%}
+.link{color:var(--ink-2);font-weight:600;text-decoration:underline;text-underline-offset:3px;font-size:13px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600;color:var(--ink-2);transition:all .15s;white-space:nowrap}
+.chip:hover{border-color:var(--ink-3);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--pri-soft);border-color:transparent;color:var(--pri)}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:var(--sel)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:var(--sel)}}
+.chip .dd{opacity:.6}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.status.free{background:var(--free-soft);color:var(--free)} .status.soon{background:var(--soon-soft);color:var(--soon)}
+.status.busy{background:var(--busy-soft);color:var(--busy)} .status.unknown,.status.closed{background:var(--unk-soft);color:var(--unk)}
+.status.claimed{background:var(--pri-soft);color:var(--pri)}
+.fac{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--ink-2)}
+.fac span{display:inline-flex;align-items:center;gap:6px}
+.bar{height:6px;border-radius:3px;background:var(--line-2);overflow:hidden;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--free);transition:width .9s linear}
+.bar.soon i{background:var(--soon)} .bar.busy i{background:var(--busy)}
+.page[hidden]{display:none!important}
+.section-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.section-h h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.01em}
+.section-h h3{margin:0;font-size:17px;font-weight:800}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,440px);gap:20px;align-items:start}
+.rightcol{position:sticky;top:16px;display:flex;flex-direction:column;gap:14px}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+
+/* ---------- search ---------- */
+.search{padding:16px}
+.sbox{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:6px 6px 6px 16px;background:var(--surface);transition:border-color .15s,box-shadow .15s}
+.sbox:focus-within{border-color:var(--ai);box-shadow:0 0 0 4px var(--ai-soft)}
+.sbox .spark{color:var(--ai)}
+.sbox input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:15.5px;padding:10px 0}
+.sbox input::placeholder{color:var(--ink-3)}
+.go{width:42px;height:42px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;flex:none;transition:transform .15s,background .15s}
+.go:hover{background:var(--pri-hover);transform:translateX(2px)}
+.sbox-lg{padding:8px 8px 8px 18px}.sbox-lg input{font-size:17px;padding:12px 0}
+.search .chips{margin-top:12px}
+.understood{border:1px solid color-mix(in srgb,var(--ai) 25%,var(--line));background:linear-gradient(0deg,var(--surface),var(--ai-soft));border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;animation:rise .25s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
+.understood .uh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.understood .uh b{font-size:12.5px;font-weight:800;letter-spacing:.08em;color:var(--ink)}
+.aibadge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--ai-soft);color:var(--ai);border:1px solid color-mix(in srgb,var(--ai) 25%,transparent)}
+.aibadge.local{background:var(--sunk);color:var(--ink-2);border-color:var(--line)}
+.ucards{display:flex;flex-wrap:wrap;gap:10px}
+.ucard{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 12px;min-width:140px}
+.ucard .i{color:var(--ink-2)}
+.ucard span{display:block;font-size:11.5px;color:var(--ink-3)} .ucard b{display:block;font-size:13.5px;font-weight:700}
+.finding{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--ink-2)}
+.dots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ai);margin-right:3px;animation:blink 1s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes blink{50%{opacity:.25}}
+.aisum{font-size:13.5px;color:var(--ink-2);margin:0}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.stat{padding:16px;display:flex;flex-direction:column;gap:8px}
+.stat .sh{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2);font-weight:600}
+.stat .si{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--sunk);color:var(--ink-2);flex:none}
+.stat .si.g{background:var(--free-soft);color:var(--free)} .stat .si.a{background:var(--soon-soft);color:var(--soon)} .stat .si.b{background:var(--ai-soft);color:var(--ai)}
+.stat .n{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.stat .n.room{font-size:26px}
+.stat .sub{font-size:12.5px;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.stat .sub.g{color:var(--free);font-weight:600}
+button.stat{text-align:left}
+
+/* ---------- results ---------- */
+.rhead{display:flex;flex-direction:column;gap:12px}
+.rtitle{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.rtitle h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-.02em}
+.rtitle p{margin:2px 0 0;color:var(--ink-3);font-size:13.5px}
+.sel{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 34px 9px 12px;font-weight:600;font-size:13.5px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A918E' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.fgroup{display:flex;flex-direction:column;gap:12px}
+.fgh{display:flex;align-items:baseline;gap:12px}
+.fgh h3{margin:0;font-size:18px;font-weight:800}
+.fgh span{color:var(--ink-3);font-size:13.5px}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.rc{padding:16px;display:flex;flex-direction:column;gap:10px;transition:transform .15s,box-shadow .15s,border-color .15s;cursor:pointer;text-align:left}
+.rc:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--ink-3)}
+.rc.selected{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri-soft)}
+.rc .rt{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.rc h4{margin:0;font-size:19px;font-weight:800;letter-spacing:-.01em}
+.rc .type{font-size:13px;color:var(--ink-3);margin-top:-6px}
+.until{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:7px}
+.until .i{color:var(--ink-3)}
+.remain{font-size:13px;font-weight:600;color:var(--free);margin-top:-6px}
+.remain.soon{color:var(--soon)} .remain.busy{color:var(--busy)}
+.nextc{font-size:12.5px;color:var(--ink-3)}
+.misses{display:flex;flex-wrap:wrap;gap:6px}
+.misses span{font-size:12px;padding:2px 8px;border-radius:6px;background:var(--busy-soft);color:var(--busy);font-weight:600}
+.misses span.ok{background:var(--free-soft);color:var(--free)}
+.empty{padding:22px;display:flex;flex-direction:column;gap:14px}
+.empty h3{margin:0;font-size:18px}
+.hopline{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.hopline .step{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 12px;text-align:left}
+.hopline .step b{display:block;font-size:15px}.hopline .step span{font-size:12.5px;color:var(--ink-3)}
+.hopline .arr{color:var(--ink-3);font-size:12.5px}
+.skel{height:170px;border-radius:18px;background:linear-gradient(90deg,var(--sunk),var(--line-2),var(--sunk));background-size:200% 100%;animation:shimmer 1.1s infinite}
+@keyframes shimmer{to{background-position:-200% 0}}
+
+/* ---------- overview extras ---------- */
+.near{display:flex;flex-direction:column}
+.nrow{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid var(--line-2);text-align:left;width:100%;transition:background .15s;border-radius:10px}
+.nrow:first-child{border-top:0}
+.nrow:hover{background:var(--surface-2)}
+.nrow .rn{font-weight:800;font-size:15.5px;min-width:74px}
+.nrow .nx{flex:1;min-width:0;font-size:13px;color:var(--ink-2)}
+.floors{display:flex;flex-direction:column;gap:9px}
+.frow{display:grid;grid-template-columns:62px 1fr 92px;gap:12px;align-items:center;font-size:13px;text-align:left;width:100%}
+.frow .fb{height:10px;border-radius:5px;background:var(--line-2);overflow:hidden;display:flex}
+.frow .fb i{background:var(--free)} .frow .fb i.s{background:var(--soon)}
+.frow b{font-weight:700}.frow span{color:var(--ink-3);text-align:right}
+.qf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.qf button{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;font-weight:600;font-size:13.5px;text-align:left;transition:border-color .15s,background .15s}
+.qf button:hover{border-color:var(--ai);background:var(--ai-soft)}
+.qf .i{color:var(--ai)}
+
+/* ---------- map ---------- */
+.mapcard{overflow:hidden;padding:0}
+.stage{position:relative;height:480px;background:var(--surface-2);touch-action:none;overflow:hidden}
+.page[data-page="map"] .stage{height:calc(100vh - 210px);min-height:480px}
+.stage canvas{display:block}
+.stage .overlay{position:absolute;inset:0;pointer-events:none;z-index:1}
+.mhead{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 14px 0 18px;pointer-events:none;flex-wrap:wrap}
+.mhead h3{margin:0;font-size:20px;font-weight:800;letter-spacing:-.01em;pointer-events:auto;background:color-mix(in srgb,var(--surface-2) 80%,transparent);border-radius:8px;padding:0 4px}
+.ftabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;pointer-events:auto;overflow-x:auto;max-width:100%;scrollbar-width:none}
+.ftabs button{padding:6px 11px;border-radius:9px;font-weight:700;font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.ftabs button:hover{color:var(--ink)}
+.ftabs button[aria-pressed="true"]{background:var(--pri);color:#fff}
+.mctl{position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:3;display:flex;flex-direction:column;gap:6px}
+.mctl button{width:36px;height:36px;border-radius:10px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink-2);box-shadow:var(--shadow)}
+.mctl button:hover{color:var(--ink)}
+.mlegend{position:absolute;left:14px;bottom:14px;z-index:3;display:flex;flex-wrap:wrap;gap:6px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:12px;font-weight:600;color:var(--ink-2);box-shadow:var(--shadow);max-width:calc(100% - 28px)}
+.mlegend span{display:inline-flex;align-items:center;gap:6px}
+.mlegend i{width:9px;height:9px;border-radius:50%}
+.stage-msg{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-2);padding:20px;text-align:center}
+.lbl{font-family:var(--font);font-size:11.5px;font-weight:800;color:var(--ink);background:color-mix(in srgb,var(--surface) 90%,transparent);border:1px solid var(--line);border-radius:7px;padding:1px 7px;white-space:nowrap;line-height:1.4;text-align:center;transition:transform .12s}
+.lbl small{display:block;font-weight:600;font-size:10px;color:var(--ink-2)}
+.lbl.free{border-color:color-mix(in srgb,var(--free) 60%,var(--line))} .lbl.soon{border-color:var(--soon)} .lbl.busy{border-color:var(--busy)}
+.lbl.minor{font-size:9.5px;font-weight:700;color:var(--ink-3);padding:0 4px}
+.lbl.hot{transform:scale(1.12)}
+.lbl.picked{background:var(--pri);color:#fff;border-color:var(--pri)} .lbl.picked small{color:#fff}
+.lbl.exit{background:var(--free);color:#fff;border-color:transparent;font-size:10.5px}
+.stage.compact .lbl.minor,.stage.compact .lbl.exit{display:none}
+.stage.compact .lbl{font-size:10.5px}
+.stage.compact .mlegend{font-size:11px;gap:4px 10px;padding:6px 10px}.stage.compact .mlegend span:last-child{display:none}
+.stage.compact .mhead h3{font-size:17px}
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);padding:9px 12px;font-size:12.5px;min-width:140px;transform:translate(14px,14px)}
+.tip b{display:block;font-size:14px}
+.tip .st{display:flex;align-items:center;gap:6px;font-weight:700;margin-top:2px}
+.tip .st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.transp{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-3)}
+.transp button{display:inline-flex;align-items:center;gap:6px;color:var(--ink-3);font-weight:600}
+.transp button:hover{color:var(--ink)}
+
+/* ---------- room detail ---------- */
+.detail{display:flex;flex-direction:column;gap:14px}
+.dh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.dh h3{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.dh .dsub{margin:6px 0 0;font-size:13.5px;color:var(--ink-2);font-weight:600}
+.xbtn{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--ink-3);flex:none}
+.xbtn:hover{background:var(--sunk);color:var(--ink)}
+.dthumb{display:flex;gap:14px;align-items:center}
+.plan-thumb{width:96px;height:72px;border-radius:12px;background:var(--sunk);flex:none;border:1px solid var(--line)}
+.avail{border-radius:14px;background:var(--free-soft);padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+.avail.soon{background:var(--soon-soft)} .avail.busy{background:var(--busy-soft)} .avail.unknown,.avail.closed{background:var(--unk-soft)}
+.avail span{display:block;font-size:12.5px;color:var(--ink-2);font-weight:600}
+.avail b{display:block;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.avail .cd{font-size:26px}
+.avail .full{grid-column:1/-1}
+.avail .bar{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.barlbl{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--ink-3);margin-top:4px}
+.nextrow{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:13.5px;flex-wrap:wrap}
+.nextrow span{color:var(--ink-3)} .nextrow b{font-weight:700}
+.dactions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dactions>:first-child{grid-column:1/-1}
+.dactions .btn{padding:12px 8px;font-size:13.5px}
+.claimed-box{border:1px solid color-mix(in srgb,var(--pri) 35%,var(--line));background:var(--pri-soft);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.claimed-box .ck{width:30px;height:30px;border-radius:50%;background:var(--pri);color:#fff;display:grid;place-items:center;flex:none;animation:popck .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes popck{from{transform:scale(.3);opacity:0}}
+.claimed-box b{display:block}.claimed-box p{margin:2px 0 0;font-size:13px;color:var(--ink-2)}
+.dirs{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;counter-reset:d}
+.dirs li{display:flex;gap:10px;font-size:13.5px;counter-increment:d}
+.dirs li::before{content:counter(d);width:22px;height:22px;border-radius:50%;background:var(--sunk);font-size:11.5px;font-weight:800;display:grid;place-items:center;flex:none}
+.note{font-size:12.5px;color:var(--ink-3)}
+.alts{display:flex;flex-wrap:wrap;gap:8px}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);z-index:50;background:var(--surface);border-left:1px solid var(--line);box-shadow:var(--shadow-lg);padding:22px;overflow-y:auto;transform:translateX(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+.scrim{position:fixed;inset:0;background:rgba(10,18,14,.28);z-index:45;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* ---------- modal + toast ---------- */
+.modal-wrap{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:16px;background:rgba(10,18,14,.38);animation:fade .15s}
+@keyframes fade{from{opacity:0}}
+.modal{width:min(440px,100%);background:var(--surface);border-radius:20px;border:1px solid var(--line);box-shadow:var(--shadow-lg);padding:22px;display:flex;flex-direction:column;gap:14px;animation:scalein .2s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes scalein{from{opacity:0;transform:scale(.94)}}
+.modal h3{margin:0;font-size:21px;font-weight:800;letter-spacing:-.01em}
+.modal p{margin:0;color:var(--ink-2)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:14px;padding:12px 14px;border-radius:12px;background:var(--sunk)}
+.kv span{color:var(--ink-3)} .kv b{font-weight:700}
+.modal textarea,.field input,.field select{width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:11px 13px;font-size:14.5px;line-height:1.45;resize:vertical}
+.modal textarea:focus,.field input:focus,.field select:focus{outline:0;border-color:var(--ai);box-shadow:0 0 0 3px var(--ai-soft)}
+.mrow{display:flex;gap:8px;flex-wrap:wrap}.mrow .btn{flex:1}
+.toasts{position:fixed;right:20px;bottom:20px;z-index:80;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.toast{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:12px;padding:11px 16px;font-weight:600;font-size:13.5px;box-shadow:var(--shadow-lg);animation:toastin .25s ease-out}
+.toast .i{color:var(--free-map)}
+@keyframes toastin{from{opacity:0;transform:translateY(8px)}}
+
+/* ---------- pages ---------- */
+.mine-now{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center}
+.list{display:flex;flex-direction:column}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.members{display:flex;flex-wrap:wrap;gap:10px}
+.member{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+.member b{font-size:13.5px;display:block;line-height:1.2}.member span{font-size:11.5px;color:var(--ink-3)}
+.member .xbtn{width:26px;height:26px}
+.stack{display:flex}.stack .av{margin-left:-8px;border:2px solid var(--surface)}.stack .av:first-child{margin-left:0}
+.win{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.win.past{opacity:.5}
+.win .wh{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.win .wh b{font-size:17px;font-weight:800}
+.lanes{display:flex;flex-direction:column;gap:6px}
+.lane{display:grid;grid-template-columns:120px 1fr;gap:10px;align-items:center;font-size:12.5px}
+.lane .lb{height:12px;border-radius:4px;background:var(--free-soft);position:relative;overflow:hidden}
+.lane .lb i{position:absolute;top:0;bottom:0;background:var(--busy-map)}
+.lane.all .lb{background:var(--line-2)} .lane.all .lb i{background:var(--free)}
+.logrow{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line-2)}
+.logrow:first-child{border-top:0}
+.logrow .li{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--sunk);color:var(--ink-2);flex:none}
+.logrow b{font-weight:700}.logrow span{display:block;font-size:12.5px;color:var(--ink-3)}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;counter-reset:s}
+.steps div{border:1px solid var(--line);border-radius:14px;padding:14px;font-size:13.5px;counter-increment:s}
+.steps div::before{content:counter(s,decimal-leading-zero);display:block;font-weight:800;color:var(--ai);font-size:12px;margin-bottom:4px}
+.steps b{display:block;margin-bottom:2px}
+.notes{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--ink-2);font-size:13.5px;max-width:80ch}
+.timepop .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:6px 0 12px}
+.timepop .seg button{flex:1;padding:7px 0;font-weight:700;font-size:12.5px;color:var(--ink-2)}
+.timepop .seg button+button{border-left:1px solid var(--line)}
+.timepop .seg button[aria-pressed="true"]{background:var(--pri);color:#fff}
+.timepop input[type=range]{width:100%;accent-color:var(--pri)}
+.timepop .tv{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0 4px}
+.timepop .tv b{font-size:20px;font-weight:800}
+.bottomnav{display:none}
+
+/* ---------- responsive ---------- */
+@media (max-width:1600px) and (min-width:1101px),(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#ovGrid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))!important}
+@media (max-width:1100px){
+  .two{grid-template-columns:minmax(0,1fr)}
+  .rightcol{position:static}
+}
+@media (max-width:760px){
+  .app,.app.collapsed{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .main{padding:16px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+  .hello h1{font-size:23px}
+  .livepill div span,.timebox span{display:none}
+  .timebox{min-width:0;padding:8px 12px}
+  .page[data-page="overview"] .rightcol,.page[data-page="find"] .rightcol{display:none}
+  .page[data-page="map"] .stage{height:calc(100vh - 230px);min-height:420px}
+  .stats{gap:10px}.stat{padding:14px}.stat .n{font-size:26px}
+  .drawer{top:auto;left:0;right:0;width:auto;max-height:88vh;border-left:0;border-top:1px solid var(--line);border-radius:22px 22px 0 0;transform:translateY(105%);padding-bottom:calc(22px + env(safe-area-inset-bottom,0px))}
+  .drawer.open{transform:none}
+  .drawer::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:var(--line);margin:-8px auto 12px}
+  .bottomnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  .bottomnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11px;font-weight:700;color:var(--ink-3);border-radius:10px}
+  .bottomnav button[aria-current="page"]{color:var(--pri)}
+  .toasts{left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));align-items:stretch}
+  .qf{grid-template-columns:1fr}
+  .mine-now{grid-template-columns:1fr}
+  .lane{grid-template-columns:84px 1fr}
+}
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="side" id="side" aria-label="Main">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 34 34" aria-hidden="true"><path d="M17 2C10.4 2 5 7.2 5 13.7 5 22.5 17 32 17 32s12-9.5 12-18.3C29 7.2 23.6 2 17 2Z" fill="var(--pri)"/><rect x="12.5" y="8.5" width="9" height="11" rx="1.6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="19" cy="14.3" r="1.1" fill="#fff"/></svg>
+      <div><b>ROOMLY</b><small>Find a room. Find your space.</small></div>
+      <button class="collapse" id="collapseBtn" type="button" aria-label="Collapse sidebar" data-icon="panel"></button>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="campus"><span class="ic" data-icon="building"></span><div><b>Campus: IST Building</b><span>SRM Tiruchirappalli</span></div></div>
+    <div class="spacer"></div>
+    <nav class="nav" id="nav2"></nav>
+    <button class="profile" type="button" data-go="settings"><span class="av" id="sideAv">T</span><div><b id="sideName">Trisha</b><span id="sideSec">III ECE-A</span></div><span class="chev faint" data-icon="chevR"></span></button>
+  </aside>
+
+  <main class="main" id="main">
+    <header class="top">
+      <div class="hello"><h1 id="hTitle">Good afternoon</h1><p id="hSub">Here's what's available around you.</p></div>
+      <div class="tools">
+        <div class="livepill" id="livePill"><span class="dot" id="liveDot"></span><div><b id="liveB">Live availability</b><span id="liveS">Updated just now</span></div></div>
+        <div style="position:relative"><button class="timebox" id="timeBtn" type="button" aria-haspopup="dialog"><span id="tDate">—</span><b id="tTime">—</b></button></div>
+        <div style="position:relative"><button class="iconbtn" id="bellBtn" type="button" aria-label="Notifications"><span data-icon="bell"></span><span class="badge" id="bellDot" hidden></span></button></div>
+        <button class="av" id="topAv" type="button" data-go="settings" aria-label="Profile">T</button>
+      </div>
+    </header>
+
+    <section class="page" data-page="overview">
+      <div class="two">
+        <div class="col">
+          <div class="card search">
+            <form class="sbox sbox-lg" data-search="overview"><span class="spark" data-icon="sparkles"></span>
+              <label for="qOverview" hidden>Where do you want to study?</label>
+              <input id="qOverview" name="q" type="text" autocomplete="off" placeholder="Try: I need an AC room on the ground floor for 6 people for the next 2 hours…">
+              <button class="go" type="submit" aria-label="Find rooms" data-icon="arrowR"></button></form>
+            <div class="chips" data-suggest></div>
+          </div>
+          <div class="stats" id="ovStats"></div>
+          <div class="two" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)" id="ovGrid">
+            <div class="card pad" style="display:flex;flex-direction:column;gap:12px"><div class="section-h"><h3>Available near you</h3><button class="link" type="button" data-go="find" data-run-default>See all</button></div><div class="near" id="ovNear"></div></div>
+            <div class="card pad" style="display:flex;flex-direction:column;gap:14px"><div class="section-h"><h3>Building availability</h3><span class="faint" id="ovBuildTime"></span></div><div class="floors" id="ovFloors"></div></div>
+          </div>
+          <div class="card pad" style="display:flex;flex-direction:column;gap:12px"><div class="section-h"><h3>Quick find</h3><span class="faint">One tap, Roomly does the rest</span></div><div class="qf" id="ovQuick"></div></div>
+          <div class="transp"><button type="button" data-go="help"><span data-icon="info" class="sm"></span>Availability calculated from current timetable data.</button></div>
+        </div>
+        <div class="rightcol"><div class="card mapcard" data-stage-slot="overview"></div><div class="card pad" id="ovDetail"></div></div>
+      </div>
+    </section>
+
+    <section class="page" data-page="find" hidden>
+      <div class="two">
+        <div class="col">
+          <div class="card search">
+            <div class="eyebrow" style="margin:0 0 10px 4px">Where do you want to study?</div>
+            <form class="sbox sbox-lg" data-search="find"><span class="spark" data-icon="sparkles"></span>
+              <label for="qFind" hidden>Describe the room you need</label>
+              <input id="qFind" name="q" type="text" autocomplete="off" placeholder="Try: I need an AC room on the ground floor for 6 people for the next 2 hours…">
+              <button class="go" type="submit" aria-label="Find rooms" data-icon="arrowR"></button></form>
+            <div class="chips" data-suggest></div>
+          </div>
+          <div id="understood"></div>
+          <div id="results"></div>
+          <div class="transp"><button type="button" data-go="help"><span data-icon="info" class="sm"></span>Availability calculated from current timetable data.</button></div>
+        </div>
+        <div class="rightcol"><div class="card mapcard" data-stage-slot="find"></div><div class="card pad" id="findDetail"></div></div>
+      </div>
+    </section>
+
+    <section class="page" data-page="map" hidden>
+      <div class="card mapcard" data-stage-slot="map"></div>
+      <div class="transp"><button type="button" data-go="help"><span data-icon="info" class="sm"></span>Availability calculated from current timetable data. Rooms in grey aren't in the timetables Roomly has.</button></div>
+    </section>
+
+    <section class="page" data-page="mine" hidden><div class="col" id="minePage"></div></section>
+    <section class="page" data-page="squad" hidden><div class="col" id="squadPage"></div></section>
+    <section class="page" data-page="activity" hidden><div class="col" id="activityPage"></div></section>
+    <section class="page" data-page="help" hidden><div class="col" id="helpPage"></div></section>
+    <section class="page" data-page="settings" hidden><div class="col" id="settingsPage"></div></section>
+  </main>
+</div>
+
+<nav class="bottomnav" id="bottomnav" aria-label="Main"></nav>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Room details"></aside>
+<div class="tip" id="tip" hidden></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="modalRoot"></div>
+<div id="popRoot"></div>
+
+<div id="stage" class="stage">
+  <div class="stage-msg" id="stageMsg">Loading the 3D building…</div>
+  <div class="mhead"><h3>IST Building</h3><div class="ftabs" id="ftabs" role="group" aria-label="Floor"></div></div>
+  <div class="mctl"><button type="button" data-zoom="in" aria-label="Zoom in" data-icon="plus"></button><button type="button" data-zoom="out" aria-label="Zoom out" data-icon="minus"></button><button type="button" data-zoom="reset" aria-label="Reset view" data-icon="reset"></button><button type="button" data-zoom="top" aria-label="Top view" data-icon="layers"></button></div>
+  <div class="mlegend"><span><i style="background:var(--free)"></i>Available</span><span><i style="background:var(--soon)"></i>Ending soon</span><span><i style="background:var(--busy)"></i>Occupied</span><span><i style="background:var(--unk)"></i>Unknown</span><span><i style="background:var(--sel)"></i>Selected</span></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+<script>
+/* ROOMLY — timetable data and scheduling engine
+   Built from the 10 SEEE timetables (SRM IST Tiruchirappalli, odd semester 2026–27).
+   Edit ROOMS to correct seats / AC / room types, and SECTIONS to update timetables. */
+
+/* ============ BELL SCHEDULES (minutes from midnight) ============ */
+// 2026–27 sheets: 9:00, 9:50 | tea | 10:50, 11:40 | lunch 12:30 | 1:20, 2:10 | tea | 3:10, 4:00
+const T26=[[540,590],[590,640],[650,700],[700,750],[750,800],[800,850],[850,900],[910,960],[960,1010]];
+// I-year sheet (2024–25 bell): 9:00, 9:55, 10:50, 11:45, lunch 12:35, 1:30, 2:25, 3:20, 4:15
+const T24=[[540,590],[595,645],[650,700],[705,755],[755,810],[810,860],[865,915],[920,970],[975,1025]];
+const DAY_START=540, DAY_END=1025;
+const DAYS=["Mon","Tue","Wed","Thu","Fri"];
+const DAY_NAMES={Mon:"Monday",Tue:"Tuesday",Wed:"Wednesday",Thu:"Thursday",Fri:"Friday"};
+
+/* ============ ROOMS ============ */
+// Floor = first digit of the IST room number (0xx = ground). AC, seats and type are ASSUMED — the timetables don't state them.
+const R=(floor,type,ac,cap,use,b="IST")=>({floor,type,ac,cap,use,b});
+const ROOMS={
+  "020":R(0,"Workshop",false,60,"Engineering workshop"),
+  "021":R(0,"Workshop",false,60,"Engineering workshop"),
+  "107":R(1,"Lab",true,36,"MPMC / Devices & IC lab"),
+  "108":R(1,"Lab",true,36,"DSP / VLSI / PCB lab"),
+  "TB-106":R(1,"CDC room",true,60,"CDC verbal reasoning","TB"),
+  "201":R(2,"Classroom",false,60,"Classroom · NSS"),
+  "211":R(2,"Classroom",false,60,"III BME home room (AN)"),
+  "225":R(2,"Classroom",false,60,"IV ECE-A home room"),
+  "227":R(2,"Classroom",false,60,"IV ECE-B home room"),
+  "309":R(3,"Lab",true,36,"Electronics lab"),
+  "401":R(4,"Seminar hall",true,120,"Seminar hall · corner of the 4th floor"),
+  "411":R(4,"Classroom",false,60,"II ECE-DS B home room (AN)"),
+  "416":R(4,"Classroom",false,60,"II ECE-DS A home room (FN)"),
+  "502":R(5,"Classroom",false,60,"I ECE-DS classroom"),
+  "510":R(5,"Classroom",false,60,"Classroom · CDC"),
+  "518":R(5,"Classroom",false,60,"III ECE-A (FN) / III ECE-B (AN)"),
+  "519":R(5,"Classroom",false,60,"III ECE-DS home room (FN)"),
+  "520":R(5,"Classroom",false,60,"Classroom"),
+  "602":R(6,"Classroom",false,60,"II BME home room (FN)"),
+  "609":R(6,"CDC room",true,60,"CDC"),
+  "617":R(6,"Lab",true,36,"PCB / PPS lab"),
+  "618":R(6,"Lab",true,36,"PPS computer lab"),
+  "625":R(6,"CDC room",true,60,"CDC analytical skills"),
+  "626":R(6,"Classroom",false,60,"Classroom · German"),
+  "702":R(7,"Classroom",false,60,"I Biotech-B / BME classroom"),
+  "710":R(7,"Classroom",false,60,"Classroom")
+};
+// Students can walk into classrooms; labs, the workshop and CDC rooms usually need staff to open them (assumed).
+for(const r in ROOMS)ROOMS[r].open=ROOMS[r].type==="Classroom";
+const roomLabel=id=>id.startsWith("TB")?"TB "+id.slice(3):"IST "+id;
+const FLOOR_NAMES=["Ground","First","Second","Third","Fourth","Fifth","Sixth","Seventh"];
+const floorName=f=>f===0?"Ground floor":FLOOR_NAMES[f]+" floor";
+
+/* ============ THE 10 TIMETABLES ============ */
+// Cell: "" = no class · "X" = slot X in the home room · "label@r1,r2" = held in those rooms · text without @ in I-year = room not given
+const S26_BME2={A:"Transforms & BVP",B:"Biomedical Signals & Systems",C:"Electric & Electronic Circuits",D:"Digital Logic for Medical Systems",E:"Medical Physics",F:"Professional Ethics",G:"Universal Human Values II",H:"Verbal Reasoning",I:"Social Engineering"};
+const S26_DS2={A:"Transforms & BVP",B:"Solid State Devices",C:"Computer Organization & Architecture",D:"Digital Logic Design",E:"Electromagnetic Theory",F:"Professional Ethics",G:"Universal Human Values II",H:"Verbal Reasoning",I:"Social Engineering",LAB:"Devices & Digital IC Lab"};
+const S26_BME3={A:"Probability & Statistics",B:"Microcontrollers in Medicine",C:"Biomedical Signal Processing",D:"Biometrics",E:"Modern Wireless Communication",F:"Principles of Medical Imaging",G:"Analytical & Logical Thinking",H:"Indian Art Form",I:"Community Connect"};
+const S26_ECE3={A:"Discrete Mathematics",B:"Microprocessors & Interfacing",C:"VLSI Design & Technology",D:"System & Network on Chip",E:"Machine Learning for All",F:"Community Connect",G:"Analytical & Logical Thinking",H:"Indian Art Form",LAB:"VLSI / Microprocessor Lab"};
+const S26_DS3={A:"Discrete Mathematics",B:"Microprocessors & Interfacing",C:"VLSI Design & Technology",D:"Machine Learning for All",E:"Database Design & Management",F:"Community Connect",G:"Analytical & Logical Thinking",H:"Indian Art Form",LAB:"VLSI / Microprocessor Lab"};
+const S26_ECE4={A:"Behavioural Psychology",B:"Wireless Communication & Antennas",C:"Computer Communication & Network Security",D:"Semiconductor Memory Design",E:"Scripting for EDA",F:"Machine Learning for All",LAB:"Network Security Lab"};
+const S24_I={CDC:"Career Development (CDC)",NSS:"NSS",German:"German",Japanese:"Japanese",Workshop:"Civil & Mechanical Workshop"};
+const x=(s,n)=>Array(n).fill(s);
+const SECTIONS=[
+ {id:"I ECE-A",file:"I year Time Table SEEE (p1)",home:null,bell:T24,subj:{...S24_I,A:"Advanced Calculus",B:"Chemistry",C:"Electronic Systems & PCB Design",D:"Programming for Problem Solving",E:"Philosophy of Engineering",F:"Biology"},days:{
+  Mon:["E@602","E@602","B@602","A@602","","Chem Lab","Chem Lab","F@710","CDC@710"],
+  Tue:["C@602","B@602","A@602","D@602","",...x("Workshop@020,021",4)],
+  Wed:["B@602","E@602","D@602","","","PPS Lab@618","PPS Lab@618","PCB Lab@108","PCB Lab@108"],
+  Thu:["German@602","German@602","German@602","A@602","","CDC@510","CDC@510","NSS@201","NSS@201"],
+  Fri:["D@602","A@602","C@602","B@602","","F@602",...x("German@626",3)]}},
+ {id:"I ECE-B & EEE",file:"I year Time Table SEEE (p2)",home:null,bell:T24,subj:S24_I,days:{
+  Mon:["CDC@609","F/G@710,520","Chem Lab","Chem Lab","","E@602","E@602","B@602","A@602"],
+  Tue:[...x("Workshop@020,021",4),"","C@602","B@602","A@602","D@602"],
+  Wed:["F/G@710,520","PPS Lab@617","CDC@510","CDC@510","PPS Lab@618","","B@602","E@602","D@602"],
+  Thu:["NSS@201","NSS@201","C@626","A@710","","D@602",...x("German@602",3)],
+  Fri:["PCB / EC Lab@617","PCB / EC Lab@617","",...x("German@626",3),"","B@602","A@602"]}},
+ {id:"I ECE-DS",file:"I year Time Table SEEE (p3)",home:null,bell:T24,subj:S24_I,days:{
+  Mon:["F@710","CDC","PCB Lab@617","PCB Lab@617","","E@502","E@502","B@502","A@502"],
+  Tue:["Chem Lab","Chem Lab","NSS@201","NSS@201","","C@502","B@502","A@502","D@502"],
+  Wed:["CDC@510","CDC@510","A@710","","PPS Lab@617","PPS Lab@617","B@502","E@502","D@502"],
+  Thu:["F@710","A@510","D@710",...x("German@502",3),"","C@502","B@502"],
+  Fri:[...x("German@626",3),"PPS Lab","",...x("Workshop@020,021",4)]}},
+ {id:"I Biotech-B & BME",file:"I year Time Table SEEE (p4)",home:null,bell:T24,subj:S24_I,days:{
+  Mon:["C@520","Yoga","Yoga","F/G@710,520","","E@702","E@702","A@702","B@702"],
+  Tue:["CDC@710","CDC@710","C@520","F@710","","","B@702","A@702","D@702"],
+  Wed:[...x("Workshop@020,021",4),"","D@702","B@702","E@702","D@702"],
+  Thu:["Chem Lab","Chem Lab","A@710","C/G@510,520","","B@702",...x("Japanese@702",3)],
+  Fri:["F@702","CDC@702","A@702",...x("Japanese@702",3),"","PPS Lab","PPS Lab"]}},
+ {id:"II BME",file:"II BME",home:"602",bell:T26,subj:{...S26_BME2,"DLMS Lab":"Digital Logic for Medical Systems Lab"},days:{
+  Mon:["E","C","I","I","","DLMS Lab@107,309","DLMS Lab@107,309","",""],
+  Tue:["C","E","B","A","","H@TB-106","H@TB-106","",""],
+  Wed:["B","D","A","","","H@TB-106","G@602","",""],
+  Thu:["A","E","B","D","","","","DLMS Lab@107,309","DLMS Lab@107,309"],
+  Fri:["F","A","C","D","","","","G@602","G@602"]}},
+ {id:"II ECE-DS A",file:"II ECE DS A",home:"416",bell:T26,subj:S26_DS2,days:{
+  Mon:["E","A","I","I","","G@602","G@602","LAB@309,107","LAB@309,107"],
+  Tue:["C","A","E","D","","G@602","","H@TB-106","H@TB-106"],
+  Wed:["A","B","C","D","","","H@TB-106","",""],
+  Thu:["B","C","A","F","","LAB@309,107","LAB@309,107","",""],
+  Fri:["D","B","E","C","","","","",""]}},
+ {id:"II ECE-DS B",file:"II ECE DS B",home:"411",bell:T26,subj:S26_DS2,days:{
+  Mon:["","","LAB@309,107","LAB@309,107","","D","B","C","I"],
+  Tue:["LAB@309,107","LAB@309,107","","","","C","D","E","A"],
+  Wed:["G@401","","","","","I","E","A","D"],
+  Thu:["G@401","G@401","H@TB-106","H@TB-106","","A","C","B","E"],
+  Fri:["H@TB-106","","","","","F","A","B","C"]}},
+ {id:"III BME",file:"III BME",home:"211",bell:T26,subj:{...S26_BME3,"MPMC Lab":"Microcontroller Lab","Bio DSP Lab":"Biomedical DSP Lab"},days:{
+  Mon:["G@625","G@625","MPMC Lab@107","MPMC Lab@107","","E","B","F","H"],
+  Tue:["Bio DSP Lab@108","Bio DSP Lab@108","G@625","","","C","D","A","B"],
+  Wed:["","","","","","C","A","F","D"],
+  Thu:["","","","I@108","","A","C","E","B"],
+  Fri:["I@108","","","","","F","A","D","E"]}},
+ {id:"III ECE-A",file:"III ECE A",home:"518",bell:T26,subj:S26_ECE3,days:{
+  Mon:["E","B","B","A","","G@625","G@625","",""],
+  Tue:["H","D","B","B-Proj","","","G@625","",""],
+  Wed:["C","A","D","F","","","","LAB@108,309","LAB@108,309"],
+  Thu:["A","E","C","F","","","","",""],
+  Fri:["D","A","E","C","","LAB@108,309","LAB@108,309","",""]}},
+ {id:"III ECE-B",file:"III ECE B",home:"518",bell:T26,subj:S26_ECE3,days:{
+  Mon:["LAB@108,309","LAB@108,309","","","","E","B","A","D"],
+  Tue:["G@625","G@625","","","","F","B","D","C"],
+  Wed:["G@625","","","","","B-Proj","B","A","H"],
+  Thu:["LAB@108,309","LAB@108,309","","","","A","C","E","F"],
+  Fri:["","","","","","C","A","E","D"]}},
+ {id:"III ECE-DS",file:"III ECE DS",home:"519",bell:T26,subj:S26_DS3,days:{
+  Mon:["E","B","C","A","","","","",""],
+  Tue:["C","B","D","F","","LAB@108,107","LAB@108,107","",""],
+  Wed:["H","B","A","C","","","","G@625","G@625"],
+  Thu:["A","D","E","F","","","","",""],
+  Fri:["D","A","E","B-Proj","","G@625","","LAB@108,107","LAB@108,107"]}},
+ {id:"IV ECE-A",file:"IV ECE A",home:"225",bell:T26,subj:S26_ECE4,days:{
+  Mon:["C","","A","D"],Tue:["C","D","B","F"],Wed:["B","LAB@108","E","F"],Thu:["F","A","E","B"],Fri:["C","A","D","E"]}},
+ {id:"IV ECE-B",file:"IV ECE B",home:"227",bell:T26,subj:S26_ECE4,days:{
+  Mon:["C","A","E","F"],Tue:["C","E","F","B"],Wed:["C","D","A","B"],Thu:["D","B","LAB@108","A"],Fri:["E","D","F",""]}}
+];
+
+/* ============ BUILD OCCUPANCY ============ */
+const OCC={}; // OCC[room][day] = [{s,e,sec,what}]
+const UNTRACKED=new Set();
+for(const id in ROOMS){OCC[id]={};for(const d of DAYS)OCC[id][d]=[];}
+function subjectOf(sec,label){
+  if(label==="B-Proj")return (sec.subj.B||"B")+" (project)";
+  if(sec.subj[label])return sec.subj[label];
+  if(/^[A-I]$/.test(label))return "Slot "+label;
+  if(/^[A-I]\/[A-I]$/.test(label))return label.split("/").map(l=>sec.subj[l]||l).join(" / ");
+  return label;
+}
+for(const sec of SECTIONS){
+  for(const d of DAYS){
+    (sec.days[d]||[]).forEach((cell,i)=>{
+      if(!cell)return;
+      let label=cell, rooms=[];
+      if(cell.includes("@")){[label]=cell.split("@");rooms=cell.split("@")[1].split(",");}
+      else if(sec.home){rooms=[sec.home];}
+      else {UNTRACKED.add(cell);return;}
+      const [s,e]=sec.bell[i];
+      for(const r of rooms){
+        if(!OCC[r]){console.warn("unknown room",r);continue;}
+        const list=OCC[r][d], last=list[list.length-1];
+        if(last&&last.sec===sec.id&&last.label===label&&s-last.e<=10){last.e=e;}
+        else list.push({s,e,sec:sec.id,label,what:subjectOf(sec,label)});
+      }
+    });
+  }
+}
+for(const r in OCC)for(const d of DAYS)OCC[r][d].sort((a,b)=>a.s-b.s);
+// double bookings across sheets
+const CLASHES=[];
+for(const r in OCC)for(const d of DAYS){const L=OCC[r][d];for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++){if(L[j].s<L[i].e&&L[i].s<L[j].e&&L[i].sec!==L[j].sec)CLASHES.push({r,d,a:L[i],b:L[j]});}}
+
+/* ============ SECTION SCHEDULES (where each class is, all day) ============ */
+const SECBUSY={}; // SECBUSY[id][day]=[{s,e,label,room}]
+for(const sec of SECTIONS){SECBUSY[sec.id]={};for(const d of DAYS){const L=[];(sec.days[d]||[]).forEach((cell,i)=>{if(!cell)return;const [s,e]=sec.bell[i];const room=cell.includes("@")?cell.split("@")[1].split(",")[0]:sec.home;const label=cell.split("@")[0];const last=L[L.length-1];if(last&&last.label===label&&s-last.e<=10)last.e=e;else L.push({s,e,label,room,what:subjectOf(sec,label)});});SECBUSY[sec.id][d]=L;}}
+/* ============ PERIODS (2026–27 bell) ============ */
+function periodAt(t){for(let i=0;i<T26.length;i++){const [s,e]=T26[i];if(t>=s&&t<e)return i===4?{n:0,txt:"Lunch",s,e}:{n:i+1,txt:"P"+(i+1),s,e};}
+  if(t<DAY_START)return {txt:"Before classes"};if(t>=1010)return {txt:"After classes"};return {txt:"Break"};}
+function nextPeriodStart(t){const p=T26.find(([s],i)=>s>t&&i!==4);return p?p[0]:null;}
+function periodSpan(s,e){const ps=T26.map(([a,b],i)=>({a,b,n:i+1})).filter(p=>p.n!==5&&p.a<e&&s<p.b);if(!ps.length)return "";return ps.length===1?"P"+ps[0].n:"P"+ps[0].n+"–P"+ps[ps.length-1].n;}
+
+/* ============ QUERIES ============ */
+const busyAt=(r,d,t)=>OCC[r][d].find(o=>o.s<=t&&t<o.e)||null;
+function nextStart(r,d,t){const o=OCC[r][d].find(o=>o.s>=t);return o?o.s:null;}
+function freeUntil(r,d,t){ // assumes free at t
+  const n=nextStart(r,d,t); return n===null?Math.max(DAY_END,t):n;}
+function freeFor(r,d,s,e){return !OCC[r][d].some(o=>o.s<e&&s<o.e);}
+
+/* ============ TIME HELPERS ============ */
+function fmt(m){m=Math.round(m);let h=Math.floor(m/60),mm=m%60;const ap=h>=12?"pm":"am";h=h%12||12;return h+":"+String(mm).padStart(2,"0")+" "+ap;}
+function fmtShort(m){let h=Math.floor(m/60),mm=m%60;h=h%12||12;return h+":"+String(mm).padStart(2,"0");}
+function dur(m){m=Math.round(m);const h=Math.floor(m/60),mm=m%60;return (h?h+" h":"")+(h&&mm?" ":"")+(mm?mm+" min":"")||"0 min";}
+function campusNow(){
+  const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",weekday:"short",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).formatToParts(new Date());
+  const g=k=>parts.find(p=>p.type===k)?.value;
+  const t=(+g("hour")%24)*60+ +g("minute");
+  return {wd:g("weekday"),t,s:t*60+ +g("second")};
+}
+
+
+/* ============ NATURAL-LANGUAGE PARSER (built-in) ============ */
+const WORDNUM={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,a:1,an:1,couple:2,few:3};
+function parseClock(h,m,ap){h=+h;m=m?+m:0;if(ap){ap=ap.toLowerCase();if(ap.startsWith("p")&&h<12)h+=12;if(ap.startsWith("a")&&h===12)h=0;}else if(h>=1&&h<=7)h+=12;return h*60+m;}
+function localParse(text,ctx){
+  const q=" "+text.toLowerCase().replace(/[’']/g,"")+" ";
+  const out={day:ctx.day,start:null,durationMin:null,floor:null,ac:null,minSeats:null,roomType:"any",building:null};
+  // day
+  const dm=q.match(/\b(mon|tue|tues|wed|thu|thur|thurs|fri)(day|sday|nesday|rsday)?\b/);
+  if(dm){const k={mon:"Mon",tue:"Tue",tues:"Tue",wed:"Wed",thu:"Thu",thur:"Thu",thurs:"Thu",fri:"Fri"}[dm[1]];out.day=k;}
+  else if(/\btomorrow\b/.test(q)){const i=DAYS.indexOf(ctx.today);out.day=i<0||i===4?"Mon":DAYS[i+1];}
+  const sameDay=out.day===ctx.today;
+  // start
+  let m;
+  if(/\bafter lunch\b/.test(q))out.start=800;
+  else if((m=q.match(/\b(?:at|from|after|starting|by|around)\s+(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm|a\.m|p\.m)?/)))out.start=parseClock(m[1],m[2],m[3]);
+  else if(/\bafternoon\b/.test(q))out.start=800;
+  else if(/\bmorning\b/.test(q))out.start=540;
+  if(/\bnext period\b/.test(q)){const n=nextPeriodStart(sameDay?ctx.t:DAY_START-1);if(n!=null)out.start=n;}
+  else if((m=q.match(/\b(?:from\s+)?(?:period|p)\s*([1-9])\b/))||(m=q.match(/\b([1-9])(?:st|nd|rd|th)\s+(?:period|hour)\b/))){if(+m[1]!==5)out.start=T26[+m[1]-1][0];}
+  // end
+  let end=null;
+  if((m=q.match(/\b(?:till|until|to|upto)\s+(?:the end of\s+)?(?:period|p)\s*([1-9])\b/)))end=T26[+m[1]-1][1];
+  if(end===null&&(m=q.match(/\b(?:till|until|untill|upto|up to|to)\s+(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)?/)))end=parseClock(m[1],m[2],m[3]);
+  else if(end===null&&/\b(rest of the day|end of the day|till evening|whole afternoon)\b/.test(q))end=DAY_END;
+  // duration
+  if((m=q.match(/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?|h)\b/)))out.durationMin=Math.round(parseFloat(m[1])*60);
+  else if((m=q.match(/\b(one|two|three|four|five|a|an|couple of|few)\s+(?:hours?|hrs?)\b/)))out.durationMin=(WORDNUM[m[1].replace(" of","")]||1)*60;
+  else if(/\bhalf an? hour\b/.test(q))out.durationMin=30;
+  else if((m=q.match(/(\d+)\s*(?:minutes?|mins?)\b/)))out.durationMin=+m[1];
+  if((m=q.match(/\b(and a half|and half)\b/))&&out.durationMin)out.durationMin+=30;
+  if(!out.durationMin&&(m=q.match(/\b(\d|one|two|three|four|five)\s+(?:free\s+)?periods?\b/))){const n=+m[1]||WORDNUM[m[1]]||1;out.durationMin=n*50+(n>1?10:0);}
+  const startGuess=out.start??(sameDay?ctx.t:DAY_START);
+  if(end!==null&&end>startGuess&&!out.durationMin)out.durationMin=end-startGuess;
+  if(!out.durationMin)out.durationMin=60;
+  // floor
+  const FL={ground:0,first:1,"1st":1,second:2,"2nd":2,third:3,"3rd":3,fourth:4,"4th":4,fifth:5,"5th":5,sixth:6,"6th":6,seventh:7,"7th":7,top:7};
+  if((m=q.match(/\b(ground|first|1st|second|2nd|third|3rd|fourth|4th|fifth|5th|sixth|6th|seventh|7th|top)\s*(?:floor|flr)\b/)))out.floor=FL[m[1]];
+  else if((m=q.match(/\bfloor\s*(\d)\b/)))out.floor=+m[1];
+  else if(/\bground\b/.test(q))out.floor=0;
+  // AC
+  if(/\b(non[- ]?ac|without ac|no ac)\b/.test(q))out.ac=false;
+  else if(/\b(ac|a\/c|a\.c|air[- ]?con\w*|cool)\b/.test(q))out.ac=true;
+  // seats
+  if((m=q.match(/(\d+)\s*(?:people|persons|members|students|friends|of us|seats|pax)\b/)))out.minSeats=+m[1];
+  else if((m=q.match(/\b(?:team|group) of (\d+|\w+)\b/)))out.minSeats=+m[1]||WORDNUM[m[1]]||6;
+  else if(/\b(team|group|squad|batch|friends)\b/.test(q))out.minSeats=6;
+  else if(/\b(alone|just me|by myself|myself)\b/.test(q))out.minSeats=1;
+  // type
+  if(/\blab\b|\blabs\b/.test(q))out.roomType="lab";
+  else if(/\b(classroom|class room|quiet|study|lecture hall)\b/.test(q))out.roomType="classroom";
+  if(/\btb\b|tech block/.test(q))out.building="TB";
+  if(out.start===null)out.start=sameDay?ctx.t:DAY_START;
+  out.openOnly=out.roomType!=="lab"&&!/\b(cdc|workshop|any room|anything|locked)\b/.test(q);
+  return out;
+}
+
+
+function groupFree(secs,d){
+  const busy=secs.flatMap(id=>SECBUSY[id][d].map(b=>({...b,sec:id}))).sort((a,b)=>a.s-b.s);
+  const merged=[];for(const b of busy){const l=merged[merged.length-1];if(l&&b.s<=l.e+10)l.e=Math.max(l.e,b.e);else merged.push({s:b.s,e:b.e});}
+  const wins=[];let t=DAY_START;
+  for(const m of merged){if(m.s-t>=40)wins.push({s:t,e:m.s});t=Math.max(t,m.e);}
+  if(DAY_END-t>=40)wins.push({s:t,e:DAY_END,tail:merged.length>0});
+  return {busy,wins};
+}
+
+</script>
+<script>
+/* =====================================================================
+   ROOMLY — app layer (runs on the timetable engine above)
+   ===================================================================== */
+const ICONS={
+  overview:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
+  search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  map:'<path d="M14.1 5.55a2 2 0 0 0 1.8 0l3.65-1.83A1 1 0 0 1 21 4.62v12.76a1 1 0 0 1-.55.9l-4.56 2.27a2 2 0 0 1-1.78 0l-4.22-2.1a2 2 0 0 0-1.78 0l-3.66 1.83A1 1 0 0 1 3 19.38V6.62a1 1 0 0 1 .55-.9l4.56-2.27a2 2 0 0 1 1.78 0z"/><path d="M15 5.76v15"/><path d="M9 3.24v15"/>',
+  bookmark:'<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  activity:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+  settings:'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  sparkles:'<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/>',
+  arrowR:'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+  snow:'<path d="M2 12h20"/><path d="M12 2v20"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/>',
+  projector:'<path d="M5 7 3 5"/><path d="M9 6V3"/><path d="m13 7 2-2"/><circle cx="9" cy="13" r="3"/><path d="M11.83 12H20a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h2.17"/><path d="M16 16h2"/>',
+  board:'<path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  pin:'<path d="M20 10c0 5-5.54 10.2-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.2 4 15 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  layers:'<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+  door:'<path d="M13 4h3a2 2 0 0 1 2 2v14"/><path d="M2 20h3"/><path d="M13 20h9"/><path d="M10 12v.01"/><path d="M13 4.56v16.16a1 1 0 0 1-1.24.97L5 20V5.56a2 2 0 0 1 1.52-1.94l4-1A2 2 0 0 1 13 4.56Z"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  copy:'<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  nav:'<polygon points="3 11 22 2 13 21 11 13 3 11"/>',
+  flask:'<path d="M10 2v7.53a2 2 0 0 1-.21.9L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.07-10.13A2 2 0 0 1 14 9.53V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>',
+  quiet:'<path d="M11 4.7a.7.7 0 0 0-1.2-.5L6.41 7.59A1.4 1.4 0 0 1 5.42 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.42a1.4 1.4 0 0 1 1 .41l3.38 3.39A.7.7 0 0 0 11 19.3z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/>',
+  chevD:'<path d="m6 9 6 6 6-6"/>', chevR:'<path d="m9 18 6-6-6-6"/>',
+  plus:'<path d="M5 12h14"/><path d="M12 5v14"/>', minus:'<path d="M5 12h14"/>',
+  reset:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  building:'<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+  timer:'<path d="M10 2h4"/><path d="m12 14 3-3"/><circle cx="12" cy="14" r="8"/>',
+  panel:'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/>',
+  mega:'<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+  userPlus:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/>',
+  eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  sliders:'<path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  leave:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+  trend:'<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>'
+};
+const ic=(n,c="")=>`<svg class="i ${c}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||""}</svg>`;
+const WA=`<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="fill:currentColor;stroke:none"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>`;
+function hydrateIcons(root=document){root.querySelectorAll("[data-icon]").forEach(el=>{if(el.dataset.hyd)return;el.dataset.hyd=1;el.insertAdjacentHTML("afterbegin",ic(el.dataset.icon,el.classList.contains("sm")?"sm":""));});}
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+
+/* ---------- facilities (estimated; the timetables don't list them) ---------- */
+for(const id in ROOMS){const r=ROOMS[id];r.proj=["Classroom","Seminar hall","CDC room"].includes(r.type);r.wb=r.type!=="Workshop";}
+const TYPE_NAME={"Classroom":"Classroom","Lab":"Lab","Seminar hall":"Seminar Room","CDC room":"CDC Training Room","Workshop":"Workshop"};
+const ordinal=n=>n+(n===1?"st":n===2?"nd":n===3?"rd":"th");
+const FLOOR_SHORT=f=>f===0?"Ground":ordinal(f);
+const FLOOR_LONG=f=>f===0?"Ground Floor":ordinal(f)+" Floor";
+function roomFloor(id){return ROOMS[id]?ROOMS[id].floor:+id[0];}
+function wing(id){if(id.startsWith("TB"))return "TB block";const p=+id.slice(1);return p<=8?"north wing":p<=11?"east wing":p<=23?"south wing":"west wing";}
+function whereText(id){if(id.startsWith("TB"))return "TB block, 1st floor";const f=roomFloor(id);return `${f===0?"Ground floor":ordinal(f)+" floor"}, ${wing(id)}`;}
+const nameOf=id=>id.startsWith("TB")?"TB 106":"IST "+id;
+
+/* ---------- per-device store ---------- */
+const DEF={name:"Trisha",section:"III ECE-A",squad:[{name:"Aarav",section:"III ECE-A"},{name:"Riya",section:"III ECE-DS"},{name:"Ananya",section:"III ECE-B"}],recent:[],log:[],claim:null,collapsed:false};
+let store;try{store=Object.assign({},DEF,JSON.parse(localStorage.getItem("roomly.v1")||"{}"));}catch(e){store={...DEF};}
+function save(){try{localStorage.setItem("roomly.v1",JSON.stringify(store));}catch(e){}}
+function logAct(type,text,room){store.log.unshift({type,text,room,at:Date.now()});store.log=store.log.slice(0,60);save();}
+const initials=n=>String(n||"?").trim().split(/\s+/).map(w=>w[0]).join("").slice(0,2).toUpperCase()||"?";
+const AV_COLORS=["#1E4D3B","#4966F5","#B8612E","#7A4FB5","#2A7F8E","#B2455E"];
+const avColor=n=>AV_COLORS[[...String(n)].reduce((a,c)=>a+c.charCodeAt(0),0)%AV_COLORS.length];
+const avatar=(n,cls="")=>`<span class="av ${cls}" style="background:${avColor(n)}" title="${esc(n)}">${esc(initials(n))}</span>`;
+
+/* ---------- clock: real campus time, or a preview that runs forward from a picked moment ---------- */
+const state={day:"Mon",live:true,page:"overview",sel:null,mapFloor:4};
+const clock={sec:DAY_START*60,at:Date.now(),real:false};
+let nowInfo=campusNow();
+function anchor(previewSec){
+  nowInfo=campusNow();const wk=DAYS.includes(nowInfo.wd);
+  if(state.live){
+    if(wk){state.day=nowInfo.wd;clock.sec=nowInfo.s;clock.real=true;}
+    else {state.day="Mon";clock.sec=DAY_START*60;clock.real=false;}
+  } else {clock.sec=previewSec??clock.sec;clock.real=false;}
+  clock.at=Date.now();
+}
+const simSec=()=>clock.sec+(Date.now()-clock.at)/1000;
+const nowMin=()=>simSec()/60;
+const fmtUp=m=>fmt(m).replace("am","AM").replace("pm","PM");
+function hms(s){s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x2=s%60;return [h,m,x2].map(v=>String(v).padStart(2,"0")).join(":");}
+function hm(mins){mins=Math.max(0,Math.floor(mins));const h=Math.floor(mins/60),m=mins%60;return h?`${h}h ${String(m).padStart(2,"0")}m`:`${m}m`;}
+
+/* ---------- room status ---------- */
+function statusAt(id,day,t){
+  if(!ROOMS[id])return {cls:"unknown"};
+  if(t>=DAY_END)return {cls:"closed"};
+  const b=busyAt(id,day,t);
+  if(b)return {cls:"busy",occ:b,until:b.e,from:b.s,thenUntil:freeUntil(id,day,b.e)};
+  const n=nextStart(id,day,t),until=n??DAY_END;
+  const from=Math.min(t,Math.max(DAY_START,...OCC[id][day].filter(o=>o.e<=t).map(o=>o.e)));
+  return {cls:until-t<30?"soon":"free",until,from,next:n!=null?OCC[id][day].find(o=>o.s===n):null,left:until-t};
+}
+const statusNow=id=>statusAt(id,state.day,nowMin());
+const STATUS_TEXT={free:"Available",soon:"Ending soon",busy:"Occupied",unknown:"Unknown",closed:"Classes over"};
+function myClaim(){const c=store.claim;if(!c)return null;if(c.day!==state.day||c.untilSec<=simSec()||Date.now()-c.at>12*3600e3)return null;return c;}
+const TRACKED=Object.keys(ROOMS);
+
+/* where the student is: floor of their section's current or next room */
+function myFloor(){
+  const sec=SECBUSY[store.section];const t=nowMin();
+  if(sec){const L=sec[state.day]||[];const cur=L.find(b=>b.s<=t&&t<b.e&&ROOMS[b.room])||L.find(b=>b.s>=t&&ROOMS[b.room])||[...L].reverse().find(b=>ROOMS[b.room]);if(cur)return ROOMS[cur.room].floor;
+    const home=SECTIONS.find(s=>s.id===store.section)?.home;if(home&&ROOMS[home])return ROOMS[home].floor;}
+  return 4;
+}
+
+/* ---------- search ---------- */
+let crit=null,baseCrit=null,lastQuery="",aiInfo={by:"local",summary:""},sortBy="best",finding=false;
+function ctxNow(){const t=Math.floor(nowMin());return {today:state.day,day:state.day,t};}
+function parseQuery(text){
+  const ctx=ctxNow(),c=localParse(text,ctx);
+  c.now=c.day===ctx.today&&c.start===ctx.t;
+  c.proj=/\bprojector\b/i.test(text)?true:null;c.wb=/\bwhite ?board\b/i.test(text)?true:null;
+  return c;
+}
+function critStart(c){return c.now?Math.max(nowMin(),DAY_START):c.start;}
+function evaluate(c){
+  const s=critStart(c),e=s+c.durationMin,out=[];
+  for(const r of TRACKED){
+    const info=ROOMS[r];
+    if(s<DAY_END&&busyAt(r,c.day,s))continue;
+    const until=s>=DAY_END?s+c.durationMin:freeUntil(r,c.day,s);
+    const miss=[],ok=[];
+    if(c.floor!=null){if(info.floor===c.floor)ok.push(FLOOR_LONG(info.floor));else miss.push({w:1+Math.abs(info.floor-c.floor)*.1,t:`Not on ${FLOOR_SHORT(c.floor).toLowerCase()} floor`});}
+    if(c.ac!=null){if(info.ac===c.ac)ok.push(info.ac?"AC":"Non-AC");else miss.push({w:1.3,t:info.ac?"Has AC":"No AC"});}
+    if(c.minSeats!=null){if(info.cap>=c.minSeats)ok.push(`${info.cap} seats`);else miss.push({w:1.5,t:`Only ~${info.cap} seats`});}
+    if(c.roomType==="lab"){if(info.type==="Lab")ok.push("Lab");else miss.push({w:1.2,t:"Not a lab"});}
+    else if(c.roomType==="classroom"){if(info.open)ok.push("Quiet classroom");else miss.push({w:1.2,t:TYPE_NAME[info.type]});}
+    if(c.proj){if(info.proj)ok.push("Projector");else miss.push({w:1,t:"No projector"});}
+    if(c.wb){if(info.wb)ok.push("Whiteboard");else miss.push({w:1,t:"No whiteboard"});}
+    if(c.building){if(info.b===c.building)ok.push(info.b+" block");else miss.push({w:1,t:"Other block"});}
+    if(until>=e)ok.push(`Free ${hm(Math.min(until,Math.max(e,DAY_END))-s)}${until>=DAY_END?"+":""}`);else miss.push({w:1.1+(e-until)/120,t:`Only ${hm(until-s)} free`});
+    out.push({r,until,miss,ok,score:miss.reduce((a,m)=>a+m.w,0)+(info.open?0:.35)});
+  }
+  const mf=myFloor();
+  const cmp={best:(a,b)=>a.score-b.score||b.until-a.until,
+    nearest:(a,b)=>Math.abs(ROOMS[a.r].floor-mf)-Math.abs(ROOMS[b.r].floor-mf)||b.until-a.until,
+    longest:(a,b)=>b.until-a.until||a.score-b.score,
+    capacity:(a,b)=>ROOMS[b.r].cap-ROOMS[a.r].cap||b.until-a.until}[sortBy];
+  const exact=out.filter(o=>!o.miss.length).sort(cmp);
+  const near=out.filter(o=>o.miss.length).sort((a,b)=>a.score-b.score||b.until-a.until).slice(0,4);
+  return {exact,near,s,e};
+}
+function fitsExceptTime(r,c,relax){const i=ROOMS[r];
+  if(c.floor!=null&&!relax.has("floor")&&i.floor!==c.floor)return false;
+  if(c.ac!=null&&!relax.has("ac")&&i.ac!==c.ac)return false;
+  if(c.minSeats!=null&&i.cap<c.minSeats)return false;
+  if(c.roomType==="lab"&&i.type!=="Lab")return false;
+  if(c.roomType==="classroom"&&!i.open)return false;
+  return true;}
+function hopPlan(c,s,e){
+  for(const relax of [new Set(),new Set(["floor"]),new Set(["ac"]),new Set(["floor","ac"])]){
+    const cands=TRACKED.filter(r=>fitsExceptTime(r,c,relax));let t=s,prev=null;const steps=[];
+    while(t<e&&steps.length<4){
+      const opts=cands.filter(r=>!busyAt(r,c.day,t)).map(r=>({r,u:Math.min(freeUntil(r,c.day,t),e)})).filter(o=>o.u>t);
+      if(!opts.length)break;const ref=prev?ROOMS[prev].floor:null;
+      opts.sort((a,b)=>b.u-a.u||(ref==null?0:Math.abs(ROOMS[a.r].floor-ref)-Math.abs(ROOMS[b.r].floor-ref)));
+      const o=opts[0];steps.push({r:o.r,s:t,e:o.u});prev=o.r;t=o.u;
+    }
+    if(t>=e&&steps.length>1)return {steps,relax:[...relax]};
+  }
+  return null;
+}
+
+/* ---------- AI (Claude via the sample capability, when the page runs inside Claude) ---------- */
+let sample=null,aiCtl=null;
+(async()=>{try{sample=await window.claude?.use?.("sample")??null;}catch(e){sample=null;}})();
+function aiPrompt(text,ctx){
+  return `You turn a student's request for an empty room into search filters for Roomly, a free-room finder for SRM IST Tiruchirappalli (IST building, floors 0 = ground to 7).
+Bell schedule: P1 09:00–09:50, P2 09:50–10:40, tea, P3 10:50–11:40, P4 11:40–12:30, lunch 12:30–13:20, P6 13:20–14:10, P7 14:10–15:00, tea, P8 15:10–16:00, P9 16:00–16:50. College day ends 17:05.
+The request may be in English, Tamil, Hindi, or a mix. Right now it is ${DAY_NAMES[ctx.today]} ${String(Math.floor(ctx.t/60)).padStart(2,"0")}:${String(ctx.t%60).padStart(2,"0")} (24-hour campus time).
+
+Request: """${text.slice(0,600)}"""
+
+Reply with only one JSON object:
+{"day":"Mon|Tue|Wed|Thu|Fri","start":"HH:MM"|"now","durationMin":number,"floor":number|null,"ac":true|false|null,"minSeats":number|null,"roomType":"classroom"|"lab"|"any","projector":true|null,"whiteboard":true|null,"summary":"one short plain sentence restating the need"}
+Rules: "start" is "now" when the day is today and no time is given, else 09:00 unless they say a time; times 1–7 without am/pm are afternoon. An end time ("till 4") sets durationMin as the difference; default durationMin 60; "next period" starts at the next period; "N periods" ≈ N×50 min plus breaks. "me and my team"/"group"/"friends" without a number → minSeats 6; "just me" → 1. "ground floor" → 0. AC → ac true; non-AC → false. "quiet"/"study" → roomType "classroom". Unmentioned → null.`;
+}
+async function refineWithAI(text){
+  if(!sample)return;
+  aiCtl?.abort();aiCtl=new AbortController();
+  const ctx=ctxNow();aiInfo={by:"thinking",summary:""};renderUnderstood();
+  try{
+    const j=await sample.json(aiPrompt(text,ctx),{modelTier:"quick",signal:aiCtl.signal});
+    const q={...crit};
+    if(DAYS.includes(j.day))q.day=j.day;
+    if(j.start==="now"){q.now=q.day===ctx.today;q.start=ctx.t;}
+    else if(typeof j.start==="string"&&/^\d{1,2}:\d{2}$/.test(j.start)){const [h,m]=j.start.split(":").map(Number);q.start=h*60+m;q.now=false;}
+    if(+j.durationMin>0)q.durationMin=Math.min(+j.durationMin,600);
+    q.floor=Number.isInteger(j.floor)&&j.floor>=0&&j.floor<=7?j.floor:null;
+    q.ac=typeof j.ac==="boolean"?j.ac:null;
+    q.minSeats=j.minSeats!=null&&+j.minSeats>0?Math.round(+j.minSeats):null;
+    q.roomType=["classroom","lab","any"].includes(j.roomType)?j.roomType:"any";
+    q.proj=j.projector===true?true:null;q.wb=j.whiteboard===true?true:null;
+    crit=q;baseCrit={...q};aiInfo={by:"ai",summary:String(j.summary||"").slice(0,200)};
+    renderUnderstood();renderResults();
+  }catch(e){
+    if(e?.code==="cancelled")return;
+    if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(e?.code))sample=null;
+    aiInfo={by:"local",summary:""};renderUnderstood();
+  }
+}
+function runQuery(text,{go=true}={}){
+  text=String(text||"").trim();if(!text)return;
+  lastQuery=text;$$('[data-search] input').forEach(i=>i.value=text);
+  crit=parseQuery(text);baseCrit={...crit};aiInfo={by:"local",summary:""};
+  logAct("search",`Searched “${text.slice(0,80)}”`);
+  if(go)setPage("find");
+  finding=true;renderUnderstood();renderResults();
+  setTimeout(()=>{finding=false;renderResults();renderUnderstood();},520);
+  refineWithAI(text);
+}
+
+function renderUnderstood(){
+  const el=$("#understood");if(!crit){el.innerHTML="";return;}
+  const c=crit,s=critStart(c);
+  const durLbl=c.durationMin%60===0?(c.durationMin===60?"hour":`${c.durationMin/60} hours`):hm(c.durationMin);
+  const timeTxt=c.now?`Next ${durLbl}`:`${c.day!==state.day?c.day+" ":""}${fmtShort(s)}–${fmt(s+c.durationMin)}`;
+  const cards=[
+    ["pin","Location",c.floor==null?"Any floor":FLOOR_LONG(c.floor)],
+    ["users","Capacity",c.minSeats==null?"Any size":c.minSeats===1?"Just you":c.minSeats>=6&&/team|group|squad|friends/i.test(lastQuery)?`Group (${c.minSeats}+ people)`:`${c.minSeats}+ people`],
+    ["clock","Duration",timeTxt],
+    ["snow","Environment",c.ac===true?"Air conditioned":c.ac===false?"Non-AC":"AC or non-AC"],
+  ];
+  if(c.roomType!=="any")cards.push([c.roomType==="lab"?"flask":"quiet","Room type",c.roomType==="lab"?"Lab":"Quiet classroom"]);
+  if(c.proj)cards.push(["projector","Needs","Projector"]);
+  const badge=aiInfo.by==="ai"?`<span class="aibadge">Refined by Claude</span>`:aiInfo.by==="thinking"?`<span class="aibadge">Claude is checking…</span>`:`<span class="aibadge local">Built-in parser</span>`;
+  el.innerHTML=`<div class="understood"><div class="uh"><span style="color:var(--ai)">${ic("sparkles")}</span><b>ROOMLY UNDERSTOOD</b>${badge}</div>
+    <div class="ucards">${cards.map(([i,k,v])=>`<div class="ucard">${ic(i)}<div><span>${k}</span><b>${esc(v)}</b></div></div>`).join("")}</div>
+    ${aiInfo.summary?`<p class="aisum">“${esc(aiInfo.summary)}”</p>`:""}
+    ${finding?`<div class="finding"><span class="dots"><i></i><i></i><i></i></span>Finding rooms that match…</div>`:""}</div>`;
+}
+
+/* ---------- room cards ---------- */
+function roomCard(r,{miss=null,ok=null,startMin=null}={}){
+  const info=ROOMS[r],t=startMin??nowMin(),st=statusAt(r,state.day,t),mine=myClaim()?.room===r;
+  const cls=mine?"claimed":st.cls;
+  const until=st.cls==="busy"?st.until:st.until;
+  const left=(st.until??t)-t,span=Math.max(1,(st.until??t)-(st.from??t));
+  const remTxt=st.cls==="busy"?`Occupied · free at ${fmtUp(st.until)}`:st.cls==="closed"?"Classes are over":`${hm(left)} remaining`;
+  return `<div class="card rc ${state.sel===r?"selected":""}" role="button" tabindex="0" data-room="${r}">
+    <div class="rt"><div><h4>${nameOf(r)}</h4></div><span class="status ${cls}">${mine?"Your squad":STATUS_TEXT[st.cls]}</span></div>
+    <div class="type">${TYPE_NAME[info.type]}${info.open?"":" · ask staff"}</div>
+    <div class="fac"><span>${ic("users","sm")}${info.cap} seats</span>${info.ac?`<span>${ic("snow","sm")}AC</span>`:""}${info.proj?`<span>${ic("projector","sm")}Projector</span>`:""}${!info.proj&&info.wb?`<span>${ic("board","sm")}Whiteboard</span>`:""}</div>
+    ${st.cls==="busy"?`<div class="until">${ic("clock","sm")}Occupied until ${fmtUp(st.until)}</div>`:st.cls==="closed"?`<div class="until">${ic("clock","sm")}Free after hours</div>`:`<div class="until">${ic("clock","sm")}Free until ${fmtUp(st.until)}</div>`}
+    <div class="remain ${st.cls==="soon"?"soon":st.cls==="busy"?"busy":""}" ${startMin==null?`data-rem="${r}"`:""}>${startMin!=null&&startMin>nowMin()+1?`Free ${fmtShort(startMin)}–${fmtShort(st.until)} (${hm(left)})`:remTxt}</div>
+    <div class="bar ${st.cls==="soon"?"soon":st.cls==="busy"?"busy":""}"><i ${startMin==null?`data-bar="${r}"`:""} style="width:${st.cls==="busy"?100*(t-st.from)/Math.max(1,st.until-st.from):100*Math.min(1,left/span)}%"></i></div>
+    ${st.next?`<div class="nextc">Next: ${esc(st.next.what)} · ${fmtUp(st.next.s)}</div>`:st.cls==="free"||st.cls==="soon"?`<div class="nextc">No more classes today</div>`:""}
+    ${miss?`<div class="misses">${ok.slice(0,3).map(o=>`<span class="ok">${esc(o)}</span>`).join("")}${miss.map(m=>`<span>${esc(m.t)}</span>`).join("")}</div>`:""}
+    <button class="btn soft sm block" type="button" data-viewmap="${r}">View on Map ${ic("arrowR","sm")}</button>
+  </div>`;
+}
+
+function renderResults(){
+  const el=$("#results");
+  if(!crit){el.innerHTML="";return;}
+  if(finding){el.innerHTML=`<div class="rgrid"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>`;return;}
+  const c=crit,{exact,near,s,e}=evaluate(c);
+  const parts=[c.now?"Available now":`From ${fmtUp(s)}${c.day!==state.day?" "+DAY_NAMES[c.day]:""}`];
+  if(c.floor!=null)parts.push(FLOOR_LONG(c.floor));if(c.ac)parts.push("AC");if(c.minSeats)parts.push(c.minSeats>1?"Fits your group":"Just you");
+  if(c.roomType==="classroom")parts.push("Quiet");if(c.roomType==="lab")parts.push("Lab");parts.push(`${hm(c.durationMin)} window`);
+  const dd=(k,label)=>`<button class="chip" type="button" data-dd="${k}" aria-pressed="${label!==null}">${esc(label??{floor:"Floor",cap:"Capacity",avail:"Availability"}[k])}<span class="dd">${ic("chevD","sm")}</span></button>`;
+  const tg=(k,label,on,icon)=>`<button class="chip" type="button" data-tg="${k}" aria-pressed="${!!on}">${ic(icon,"sm")}${label}</button>`;
+  let h=`<div class="rhead"><div class="rtitle"><div><h2>${exact.length?`${exact.length} room${exact.length>1?"s":""} found`:"No perfect match found."}</h2><p>${parts.join(" • ")}</p></div>
+    <label for="sortSel" hidden>Sort</label><select class="sel" id="sortSel">${[["best","Best match"],["nearest","Nearest"],["longest","Longest availability"],["capacity","Capacity"]].map(([v,l])=>`<option value="${v}" ${sortBy===v?"selected":""}>${l}</option>`).join("")}</select></div>
+    <div class="chips">${dd("floor",c.floor==null?null:FLOOR_SHORT(c.floor)+" floor")}${dd("cap",c.minSeats?c.minSeats+"+ people":null)}${tg("ac","AC",c.ac===true,"snow")}${tg("proj","Projector",c.proj,"projector")}${tg("wb","Whiteboard",c.wb,"board")}${tg("lab","Lab",c.roomType==="lab","flask")}${tg("quiet","Quiet",c.roomType==="classroom","quiet")}${dd("avail",hm(c.durationMin))}<button class="link" type="button" data-resetf style="margin-left:4px">Reset</button></div></div>`;
+  if(exact.length){
+    const groups={};for(const x2 of exact)(groups[ROOMS[x2.r].floor]??=[]).push(x2);
+    let order=Object.keys(groups).map(Number).sort((a,b)=>a-b);
+    if(sortBy==="nearest"){const mf=myFloor();order.sort((a,b)=>Math.abs(a-mf)-Math.abs(b-mf));}
+    for(const f of order){const g=groups[f];
+      h+=`<div class="fgroup"><div class="fgh"><h3>${FLOOR_LONG(f)}</h3><span>${g.length} room${g.length>1?"s":""} available</span></div><div class="rgrid">${g.map(o=>roomCard(o.r,{startMin:c.now?null:s})).join("")}</div></div>`;}
+  }else{
+    const plan=hopPlan(c,s,e);
+    h+=`<div class="card empty"><div><h3>Here's what comes closest</h3><p class="muted" style="margin:4px 0 0">Nothing fits every condition for the whole ${hm(c.durationMin)}. Each option below misses one or two things, marked in red. Tap a filter above to loosen it.</p></div>
+      <div class="rgrid">${near.map(o=>roomCard(o.r,{miss:o.miss,ok:o.ok,startMin:c.now?null:s})).join("")}</div>
+      ${plan?`<div><div class="eyebrow" style="margin-bottom:8px">Or hop between rooms and never get kicked out</div><div class="hopline">${plan.steps.map((st,i)=>`${i?`<span class="arr">→</span>`:""}<button type="button" class="step" data-room="${st.r}"><b>${nameOf(st.r)}</b><span>${fmtShort(st.s)}–${fmtShort(st.e)} · ${FLOOR_SHORT(ROOMS[st.r].floor)}</span></button>`).join("")}</div>${plan.relax.length?`<p class="note" style="margin:8px 0 0">This plan ignores ${plan.relax.map(k=>k==="ac"?"AC":"the floor").join(" and ")}.</p>`:""}</div>`:""}</div>`;
+  }
+  el.innerHTML=`<div style="display:flex;flex-direction:column;gap:20px">${h}</div>`;
+}
+document.addEventListener("change",e=>{if(e.target.id==="sortSel"){sortBy=e.target.value;renderResults();}});
+
+/* filter chips & popovers */
+function closePop(){$("#popRoot").innerHTML="";}
+function showPop(anchorEl,html,onPick,width){
+  const r=anchorEl.getBoundingClientRect();
+  $("#popRoot").innerHTML=`<div class="pop" style="top:${r.bottom+window.scrollY+6}px;left:${Math.max(12,Math.min(r.left+window.scrollX,window.innerWidth-(width||260)-12))}px;${width?`width:${width}px`:""}">${html}</div>`;
+  const p=$("#popRoot .pop");p.addEventListener("click",ev=>{const b=ev.target.closest("[data-pick]");if(b){onPick(b.dataset.pick);closePop();}});
+}
+document.addEventListener("click",e=>{
+  if($("#popRoot .pop")&&!e.target.closest(".pop")&&!e.target.closest("[data-dd],#timeBtn,#bellBtn"))closePop();
+  const tg=e.target.closest("[data-tg]");
+  if(tg&&crit){const k=tg.dataset.tg;
+    if(k==="ac")crit.ac=crit.ac===true?null:true;
+    if(k==="proj")crit.proj=crit.proj?null:true;
+    if(k==="wb")crit.wb=crit.wb?null:true;
+    if(k==="lab")crit.roomType=crit.roomType==="lab"?"any":"lab";
+    if(k==="quiet")crit.roomType=crit.roomType==="classroom"?"any":"classroom";
+    renderResults();renderUnderstood();return;}
+  const dd=e.target.closest("[data-dd]");
+  if(dd&&crit){const k=dd.dataset.dd;
+    const opts=k==="floor"?[["any","Any floor"],...[0,1,2,3,4,5,6,7].map(f=>[f,FLOOR_LONG(f)])]:k==="cap"?[["any","Any size"],[2,"2+ people"],[4,"4+ people"],[6,"6+ people"],[10,"10+ people"],[30,"30+ people"]]:[[30,"30 minutes"],[60,"1 hour"],[120,"2 hours"],[180,"3 hours"],[480,"Rest of the day"]];
+    showPop(dd,`<div class="list">${opts.map(([v,l])=>`<button type="button" class="nrow" style="padding:9px 10px" data-pick="${v}">${l}</button>`).join("")}</div>`,v=>{
+      if(k==="floor")crit.floor=v==="any"?null:+v;
+      if(k==="cap")crit.minSeats=v==="any"?null:+v;
+      if(k==="avail")crit.durationMin=+v;
+      renderResults();renderUnderstood();},220);
+    return;}
+  if(e.target.closest("[data-resetf]")&&baseCrit){crit={...baseCrit};renderResults();renderUnderstood();}
+});
+
+/* ---------- room detail ---------- */
+function directions(id){
+  if(id.startsWith("TB"))return ["TB 106 is in the TB block, not the IST building.","Leave IST and walk to the TB block entrance.","Take the stairs to the 1st floor; 106 is the CDC training room."];
+  const f=roomFloor(id),w=wing(id),p=+id.slice(1);
+  const steps=["Head to the main stairs in the north wing, between the men's and women's washrooms."];
+  steps.push(f===0?"Stay on the ground floor.":`Climb to the ${ordinal(f)} floor.`);
+  if(w==="north wing")steps.push(p<=4?"Walk west along the north corridor (turn left off the stairs).":"Walk east along the north corridor (turn right off the stairs).");
+  if(w==="east wing")steps.push("Walk east along the north corridor, then turn right down the east corridor.");
+  if(w==="west wing")steps.push("Walk west along the north corridor, then turn left down the west corridor.");
+  if(w==="south wing")steps.push(p<=17?"Go down the east corridor to the south corridor, then walk west.":"Go down the west corridor to the south corridor, then walk east.");
+  steps.push(`${nameOf(id)} is on the outer side of the ${w.replace(" wing","")} corridor.`);
+  return steps;
+}
+function detailHTML(id,{closable=true}={}){
+  const info=ROOMS[id],meta=window.R3?.meta?.(id)||{kind:info?"tracked":"room",name:info?TYPE_NAME[info.type]:"Room"};
+  const head=(pill,sub)=>`<div class="dh"><div><h3>${nameOf(id)}</h3><div style="margin-top:8px">${pill}</div><p class="dsub">${sub}</p></div>${closable?`<button class="xbtn" type="button" data-close-detail aria-label="Close">${ic("x")}</button>`:""}</div>`;
+  if(!info){
+    const fac=meta.kind==="facility"||meta.kind==="stairs";
+    return `<div class="detail">${head(`<span class="status unknown">${fac?"Not a study space":"Unknown"}</span>`,`${esc(meta.name)} · ${whereText(id)}`)}
+      <div class="avail unknown"><div class="full"><span>${fac?"Facility":"No timetable data"}</span><b style="font-size:17px;font-weight:700;margin-top:4px">${fac?`${esc(meta.name)} — students don't sit here.`:"This room isn't in the 10 timetables Roomly has, so its bookings are unknown."}</b></div></div>
+      <button class="btn sec" type="button" data-dir="${id}">${ic("nav")}Directions</button><ol class="dirs" data-dirs="${id}" hidden>${directions(id).map(s=>`<li>${esc(s)}</li>`).join("")}</ol></div>`;
+  }
+  const st=statusNow(id),mine=myClaim()?.room===id?myClaim():null;
+  const pill=mine?`<span class="status claimed">Claimed by your squad</span>`:`<span class="status ${st.cls}">${st.cls==="free"?"Available now":STATUS_TEXT[st.cls]}</span>`;
+  let avail="";
+  if(st.cls==="free"||st.cls==="soon")avail=`<div class="avail ${st.cls}"><div><span>Available until</span><b>${fmtUp(st.until)}</b></div><div><span>Time remaining</span><b class="cd" data-cd="${id}">${hms(st.until*60-simSec())}</b></div>
+      <div class="full"><div class="bar ${st.cls}"><i data-bar="${id}" style="width:${100*Math.min(1,st.left/Math.max(1,st.until-st.from))}%"></i></div><div class="barlbl"><span>NOW</span><span>${st.next?"NEXT CLASS":"END OF DAY"}</span></div></div></div>`;
+  else if(st.cls==="busy")avail=`<div class="avail busy"><div><span>Occupied until</span><b>${fmtUp(st.until)}</b></div><div><span>Free in</span><b class="cd" data-cd="${id}">${hms(st.until*60-simSec())}</b></div>
+      <div class="full"><span>In use by <b style="display:inline;font-size:13.5px">${esc(st.occ.sec)}</b> · ${esc(st.occ.what)}${st.thenUntil>st.until?` · then free until ${fmtUp(st.thenUntil)}`:""}</span></div></div>`;
+  else avail=`<div class="avail closed"><div class="full"><span>Classes are over</span><b style="font-size:17px">No more classes here today.</b></div></div>`;
+  const nx=st.cls==="busy"?null:st.next;
+  const nextRow=`<div class="nextrow"><span>Next class</span>${nx?`<b>${esc(nx.what)}</b><span>${fmtShort(nx.s)} – ${fmtUp(nx.e)}</span>`:st.cls==="busy"?`<b>${esc(st.occ.what)} (now)</b>`:`<b>None today</b>`}</div>`;
+  const claimBox=mine?`<div class="claimed-box"><span class="ck">${ic("check","sm")}</span><div><b>Room claimed</b><p>Your squad${mine.squad?` (${esc(mine.squad)})`:""} has ${nameOf(id)} until ${fmtUp(mine.untilSec/60)}.</p></div></div>`:"";
+  const canClaim=st.cls==="free"||st.cls==="soon";
+  const alts=st.cls==="busy"?nearestFree(id):[];
+  return `<div class="detail">${head(pill,`${TYPE_NAME[info.type]} · ${whereText(id)}`)}
+    <div class="fac"><span>${ic("users","sm")}${info.cap} seats</span><span>${ic("snow","sm")}${info.ac?"AC":"Non-AC"}</span>${info.proj?`<span>${ic("projector","sm")}Projector</span>`:""}${info.wb?`<span>${ic("board","sm")}Whiteboard</span>`:""}${info.open?"":`<span>${ic("lock","sm")}Ask staff to open</span>`}</div>
+    ${avail}${nextRow}${claimBox}
+    <div class="dactions">
+      ${mine?`<button class="btn sec" type="button" data-release>${ic("leave","sm")}Release</button>`:`<button class="btn pri" type="button" data-claim="${id}" ${canClaim?"":"disabled style=\"opacity:.45;cursor:not-allowed\""}>Claim Room</button>`}
+      <button class="btn wa" type="button" data-squadcall="${id}" ${canClaim||mine?"":"disabled style=\"opacity:.45;cursor:not-allowed\""}>${WA}Call the Squad</button>
+      <button class="btn sec" type="button" data-dir="${id}">${ic("nav","sm")}Directions</button>
+    </div>
+    <ol class="dirs" data-dirs="${id}" hidden>${directions(id).map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+    ${alts.length?`<div><div class="eyebrow" style="margin-bottom:8px">Free rooms nearby</div><div class="alts">${alts.map(a=>`<button class="chip" type="button" data-room="${a.r}">${nameOf(a.r)} · till ${fmtShort(a.st.until)}</button>`).join("")}</div></div>`:""}
+    <p class="note" style="margin:0">Seats and facilities are estimates. Times come from the timetables.</p>
+  </div>`;
+}
+function nearestFree(id){const f=roomFloor(id);return TRACKED.filter(r=>r!==id).map(r=>({r,st:statusNow(r)})).filter(o=>(o.st.cls==="free")&&o.st.left>=20).sort((a,b)=>(ROOMS[b.r].open-ROOMS[a.r].open)||Math.abs(ROOMS[a.r].floor-f)-Math.abs(ROOMS[b.r].floor-f)||b.st.until-a.st.until).slice(0,3);}
+const inlineSlot=()=>window.innerWidth>1100&&(state.page==="overview"||state.page==="find")?$(state.page==="overview"?"#ovDetail":"#findDetail"):null;
+function placeholderDetail(){return `<div class="detail"><div class="eyebrow">Room details</div><p class="muted" style="margin:0">Tap a room on the map or in the list to see how long it stays free, then claim it and call your squad.</p><div class="steps" style="grid-template-columns:1fr 1fr 1fr"><div><b>Pick</b>a green room</div><div><b>Claim</b>it for your squad</div><div><b>Call</b>them on WhatsApp</div></div></div>`;}
+function renderDetail(){
+  const slot=inlineSlot();
+  for(const s of ["#ovDetail","#findDetail"])if($(s)&&$(s)!==slot)$(s).innerHTML=state.sel&&window.innerWidth>1100?detailHTML(state.sel):placeholderDetail();
+  if(slot){slot.innerHTML=state.sel?detailHTML(state.sel):placeholderDetail();closeDrawer(true);}
+  else if(state.sel&&$("#drawer").classList.contains("open"))$("#drawer").innerHTML=detailHTML(state.sel);
+}
+function openDrawer(){const d=$("#drawer");d.innerHTML=detailHTML(state.sel);d.classList.add("open");$("#scrim").classList.toggle("on",state.page!=="map"||window.innerWidth<=760);}
+function closeDrawer(silent){$("#drawer").classList.remove("open");$("#scrim").classList.remove("on");}
+function selectRoom(id,{fromMap=false}={}){
+  state.sel=id;
+  store.recent=[id,...store.recent.filter(r=>r!==id)].slice(0,10);save();
+  window.R3?.select(id);
+  if(inlineSlot()){renderDetail();}else openDrawer();
+  $$(".rc").forEach(c=>c.classList.toggle("selected",c.dataset.room===id));
+}
+function clearSel(){state.sel=null;window.R3?.select(null);closeDrawer();renderDetail();$$(".rc.selected").forEach(c=>c.classList.remove("selected"));}
+$("#scrim").addEventListener("click",()=>{closeDrawer();});
+
+/* ---------- claim / squad / toasts ---------- */
+function toast(text,icon="check"){const t=document.createElement("div");t.className="toast";t.innerHTML=ic(icon)+`<span>${esc(text)}</span>`;$("#toasts").appendChild(t);setTimeout(()=>t.remove(),3200);}
+function modal(html){$("#modalRoot").innerHTML=`<div class="modal-wrap" id="mw"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  $("#mw").addEventListener("click",e=>{if(e.target.id==="mw"||e.target.closest("[data-mclose]"))closeModal();});
+  setTimeout(()=>$("#modalRoot [autofocus]")?.focus(),30);}
+function closeModal(){$("#modalRoot").innerHTML="";}
+function openClaim(id){
+  const st=statusNow(id);if(!(st.cls==="free"||st.cls==="soon"))return;
+  modal(`<h3>Claim ${nameOf(id)}?</h3>
+    <div class="kv"><span>Available for</span><b>${hm(st.left)}</b><span>Until</span><b>${fmtUp(st.until)}${st.next?` · ${esc(st.next.sec)} arrives`:""}</b></div>
+    <div class="field"><label for="squadNameIn">Squad name (optional)</label><input id="squadNameIn" type="text" maxlength="30" placeholder="e.g. DBMS project team" value="${esc(store.squadName||"")}"></div>
+    <p>Your room will be marked as occupied by your squad on this device, and you'll be able to call them right away.</p>
+    <div class="mrow"><button class="btn sec" type="button" data-mclose>Cancel</button><button class="btn pri" type="button" id="doClaim" autofocus>Claim Room</button></div>`);
+  $("#doClaim").onclick=()=>{
+    const sq=$("#squadNameIn").value.trim().slice(0,30);store.squadName=sq;
+    const s2=statusNow(id);store.claim={room:id,day:state.day,untilSec:s2.until*60,squad:sq,at:Date.now()};
+    logAct("claim",`Claimed ${nameOf(id)} until ${fmtUp(s2.until)}`,id);save();closeModal();
+    toast(`Room claimed · ${nameOf(id)} is yours until ${fmtUp(s2.until)}`);refreshAll();
+  };
+}
+function squadMessage(id){
+  const c=myClaim();const until=c&&c.room===id?c.untilSec/60:statusNow(id).until;
+  return `📍 Heading to ${nameOf(id)} (${whereText(id).toLowerCase()}).\nIt's free until ${fmtUp(until)}.\nCome fast!`;
+}
+const waLink=t=>"https://wa.me/?text="+encodeURIComponent(t);
+function openSquad(id){
+  const msg=squadMessage(id),c=myClaim();const until=c&&c.room===id?c.untilSec/60:statusNow(id).until;
+  const people=[store.name,...store.squad.map(m=>m.name)];
+  modal(`<div style="display:flex;align-items:center;gap:10px"><span style="color:var(--wa)">${WA}</span><h3>Call your squad</h3></div>
+    <div class="kv"><span>Room</span><b>${nameOf(id)} · ${whereText(id)}</b><span>Available until</span><b>${fmtUp(until)}</b><span>Squad</span><b><span class="stack">${people.slice(0,6).map(n=>avatar(n,"sm")).join("")}</span></b></div>
+    <div class="field"><label for="msgIn">Message preview</label><textarea id="msgIn" rows="4">${esc(msg)}</textarea></div>
+    <div class="mrow"><a class="btn wa-solid" id="waGo" href="${waLink(msg)}" target="_blank" rel="noopener">${WA}Open WhatsApp</a><button class="btn sec" type="button" id="copyMsg">${ic("copy","sm")}Copy Message</button></div>
+    <p class="note">WhatsApp opens with this message ready. Pick your group chat and press send.</p>`);
+  $("#msgIn").addEventListener("input",e=>{$("#waGo").href=waLink(e.target.value);});
+  $("#waGo").addEventListener("click",()=>{logAct("call",`Called the squad to ${nameOf(id)}`,id);toast("Opening WhatsApp…","send");});
+  $("#copyMsg").onclick=()=>{const v=$("#msgIn").value;const ok=()=>{toast("Message copied","copy");logAct("copy",`Copied the squad message for ${nameOf(id)}`,id);};
+    try{navigator.clipboard.writeText(v).then(ok,()=>{$("#msgIn").select();});}catch(err){$("#msgIn").select();}};
+}
+ICONS.send='<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>';
+function release(){const c=store.claim;if(!c)return;logAct("release",`Released ${nameOf(c.room)}`,c.room);store.claim=null;save();toast(`${nameOf(c.room)} released`,"leave");refreshAll();}
+
+/* ---------- global clicks ---------- */
+document.addEventListener("click",e=>{
+  const t=e.target;
+  const go=t.closest("[data-go]");if(go){if(go.hasAttribute("data-run-default")&&!crit)runQuery("free room for the next hour",{go:false});setPage(go.dataset.go);return;}
+  const vm=t.closest("[data-viewmap]");if(vm){e.stopPropagation();const id=vm.dataset.viewmap;if(window.innerWidth<=1100)setPage("map");selectRoom(id);return;}
+  if(t.closest("[data-close-detail]")){clearSel();return;}
+  const cl=t.closest("[data-claim]");if(cl){openClaim(cl.dataset.claim);return;}
+  if(t.closest("[data-release]")){release();return;}
+  const sc=t.closest("[data-squadcall]");if(sc){openSquad(sc.dataset.squadcall);return;}
+  const dr=t.closest("[data-dir]");if(dr){const box=dr.closest(".detail")?.querySelector(`[data-dirs]`);if(box){box.hidden=!box.hidden;if(!box.hidden){logAct("dirs",`Checked directions to ${nameOf(dr.dataset.dir)}`,dr.dataset.dir);if(state.page!=="map"||true)window.R3?.select(dr.dataset.dir);}}return;}
+  const rm=t.closest("[data-room]");if(rm&&!t.closest("#drawer .detail .dh")){selectRoom(rm.dataset.room);return;}
+  const q=t.closest("[data-q]");if(q){runQuery(q.dataset.q);return;}
+  const sg=t.closest("[data-sug]");if(sg){const form=sg.closest(".search").querySelector("input");form.value=(form.value.trim()?form.value.trim().replace(/[.]$/,"")+", ":"")+sg.dataset.sug;form.focus();return;}
+  const ff=t.closest("[data-floorgo]");if(ff){state.mapFloor=+ff.dataset.floorgo;setPage("map");window.R3?.setFloor(state.mapFloor);return;}
+});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches(".rc[data-room]")){selectRoom(e.target.dataset.room);}if(e.key==="Escape"){closeModal();closePop();closeDrawer();}});
+document.addEventListener("submit",e=>{const f=e.target.closest("[data-search]");if(f){e.preventDefault();runQuery(f.querySelector("input").value);}});
+
+/* ---------- pages ---------- */
+const NAV=[["overview","Overview","overview"],["find","Find a Room","search"],["map","Floor Map","map"],["mine","My Rooms","bookmark"],["squad","Squad","users"],["activity","Activity","activity"]];
+const NAV2=[["help","Help","help"],["settings","Settings","settings"]];
+const TITLES={overview:null,find:["Find your space.","See what's free right now, or tell Roomly what you need."],map:["Floor Map","Tap a room to see exactly how long it stays free."],mine:["My Rooms","Your claimed room and the rooms you looked at."],squad:["Squad","Your people, and the gaps when you're all free."],activity:["Activity","Everything you did in Roomly on this device."],help:["Help","How Roomly works and where the data comes from."],settings:["Settings","Your name, your section, your device."]};
+function renderNav(){
+  const free=TRACKED.filter(r=>["free","soon"].includes(statusNow(r).cls)).length;
+  const item=([k,l,i])=>`<button type="button" data-go="${k}" ${state.page===k?'aria-current="page"':""} title="${l}">${ic(i)}<span>${l}</span>${k==="find"?`<b class="count">${free}</b>`:""}</button>`;
+  $("#nav").innerHTML=NAV.map(item).join("");$("#nav2").innerHTML=NAV2.map(item).join("");
+  $("#bottomnav").innerHTML=NAV.slice(0,5).map(([k,l,i])=>`<button type="button" data-go="${k}" ${state.page===k?'aria-current="page"':""}>${ic(i)}${l.replace("Find a Room","Find").replace("Floor Map","Map")}</button>`).join("");
+}
+function setPage(p){
+  if(!TITLES.hasOwnProperty(p))p="overview";
+  state.page=p;$$(".page").forEach(s=>s.hidden=s.dataset.page!==p);
+  try{history.replaceState(null,"","#"+p);}catch(e){}
+  const slot=$(`[data-stage-slot="${p}"]`);if(slot){slot.appendChild($("#stage"));$("#stage").classList.toggle("compact",p!=="map");window.R3?.resize();}
+  closeDrawer();closePop();renderAll();window.scrollTo({top:0});
+}
+function greet(){const h=Math.floor((nowInfo.t)/60);return h<12?"Good morning":h<17?"Good afternoon":"Good evening";}
+function renderHeader(){
+  const T=TITLES[state.page];
+  $("#hTitle").textContent=T?T[0]:`${greet()}, ${store.name||"there"} 👋`;$("#hSub").textContent=T?T[1]:"Here's what's available around you.";
+  const d=new Date();
+  const dateTxt=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",weekday:"short",day:"numeric",month:"short",year:"numeric"}).format(d).replace(/^(\w+) /,"$1, ");
+  if(clock.real){$("#liveDot").className="dot";$("#liveB").textContent="Live availability";$("#liveS").textContent="Updated just now";$("#tDate").textContent=dateTxt;$("#tTime").textContent=fmtUp(nowMin());}
+  else{$("#liveDot").className="dot preview";$("#liveB").textContent=state.live?"Weekend preview":"Preview mode";$("#liveS").textContent=`${DAY_NAMES[state.day]} · tap the time to change`;$("#tDate").textContent="Previewing "+DAY_NAMES[state.day];$("#tTime").textContent=fmtUp(nowMin());}
+  const n=store.name||"You";$("#topAv").textContent=initials(n);$("#topAv").style.background=avColor(n);$("#sideAv").textContent=initials(n);$("#sideAv").style.background=avColor(n);
+  $("#sideName").textContent=n;$("#sideSec").textContent=store.section||"No section";
+  const alerts=notifs();$("#bellDot").hidden=!alerts.some(a=>a.warn);
+}
+function notifs(){
+  const out=[],c=myClaim(),t=nowMin();
+  if(c){const left=c.untilSec/60-t;out.push({warn:left<15,icon:left<15?"timer":"check",text:left<15?`${nameOf(c.room)}: only ${hm(left)} left before the next class arrives.`:`Your squad has ${nameOf(c.room)} until ${fmtUp(c.untilSec/60)}.`});}
+  const L=SECBUSY[store.section]?.[state.day]||[];const nx=L.find(b=>b.s>t);
+  if(nx)out.push({warn:nx.s-t<=10,icon:"calendar",text:`Your next class: ${nx.what} at ${fmtUp(nx.s)}${nx.room&&ROOMS[nx.room]?" in "+nameOf(nx.room):""}.`});
+  const soon=TRACKED.filter(r=>statusNow(r).cls==="soon").length;if(soon)out.push({icon:"clock",text:`${soon} room${soon>1?"s are":" is"} ending within 30 minutes.`});
+  out.push({icon:"info",text:"Availability is calculated from 10 SEEE timetables."});
+  return out;
+}
+$("#bellBtn").addEventListener("click",e=>{
+  if($("#popRoot .pop")){closePop();return;}
+  showPop(e.currentTarget,`<h4>Notifications</h4>${notifs().map(n=>`<div class="notif"><span class="ni ${n.warn?"warn":n.icon==="check"?"ok":""}">${ic(n.icon,"sm")}</span><div>${esc(n.text)}</div></div>`).join("")}`,()=>{},320);
+});
+$("#timeBtn").addEventListener("click",e=>{
+  if($("#popRoot .pop")){closePop();return;}
+  const t=Math.min(Math.max(Math.floor(nowMin()),DAY_START),DAY_END-5);
+  showPop(e.currentTarget,`<div class="timepop"><h4>Preview another time</h4><p class="note" style="margin:0">Roomly shows live availability. Pick a day and time to see what it looks like then; the countdowns run from that moment.</p>
+    <div class="seg">${DAYS.map(d=>`<button type="button" data-tday="${d}" aria-pressed="${d===state.day}">${d}</button>`).join("")}</div>
+    <div class="tv"><b id="tpv">${fmtUp(t)}</b><span class="faint" id="tpp">${periodAt(t).txt}</span></div>
+    <label for="tpr" hidden>Time</label><input id="tpr" type="range" min="540" max="1020" step="5" value="${t}">
+    <div class="mrow" style="margin-top:12px"><button class="btn sec sm" type="button" id="tpNext">Next period</button><button class="btn pri sm" type="button" id="tpLive">Back to live</button></div></div>`,()=>{},300);
+  const apply=(day,m)=>{state.live=false;state.day=day;anchor(m*60);refreshAll();$("#tpv").textContent=fmtUp(m);$("#tpp").textContent=periodAt(m).txt;$$("[data-tday]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tday===day));};
+  $$("[data-tday]").forEach(b=>b.onclick=()=>apply(b.dataset.tday,+$("#tpr").value));
+  $("#tpr").oninput=ev=>apply(state.day,+ev.target.value);
+  $("#tpNext").onclick=()=>{const n=nextPeriodStart(Math.floor(nowMin()));if(n!=null){$("#tpr").value=n;apply(state.day,n);}};
+  $("#tpLive").onclick=()=>{state.live=true;anchor();refreshAll();closePop();toast("Back to live availability","activity");};
+});
+
+function renderOverview(){
+  const all=TRACKED.map(r=>({r,st:statusNow(r)}));
+  const avail=all.filter(o=>o.st.cls==="free"||o.st.cls==="soon"),soon=all.filter(o=>o.st.cls==="soon");
+  const c=myClaim();
+  $("#ovStats").innerHTML=`
+    <div class="card stat"><div class="sh"><span class="si g">${ic("door")}</span>Rooms available now</div><div class="n">${avail.length}</div><div class="sub">of ${TRACKED.length} rooms in the timetables</div></div>
+    <div class="card stat"><div class="sh"><span class="si a">${ic("clock")}</span>Rooms ending soon</div><div class="n">${soon.length}</div><div class="sub"><span class="dot preview" style="width:7px;height:7px"></span>Within 30 minutes</div></div>
+    <div class="card stat"><div class="sh"><span class="si b">${ic("layers")}</span>Total rooms</div><div class="n">${TRACKED.length}</div><div class="sub">Across 8 floors + TB block</div></div>
+    <button class="card stat" type="button" ${c?`data-room="${c.room}"`:`data-go="find" data-run-default`}><div class="sh"><span class="si g">${ic("pin")}</span>Your current room</div><div class="n room">${c?nameOf(c.room):"None yet"}</div><div class="sub ${c?"g":""}" ${c?`data-claimrem`:""}>${c?`${hm(c.untilSec/60-nowMin())} remaining`:"Claim a room to see it here"}</div></button>`;
+  const mf=myFloor();
+  const near=avail.filter(o=>o.st.cls==="free").sort((a,b)=>(ROOMS[b.r].open-ROOMS[a.r].open)||Math.abs(ROOMS[a.r].floor-mf)-Math.abs(ROOMS[b.r].floor-mf)||b.st.until-a.st.until).slice(0,4);
+  $("#ovNear").innerHTML=near.length?near.map(o=>`<button class="nrow" type="button" data-room="${o.r}"><span class="rn">${nameOf(o.r)}</span><span class="nx">${FLOOR_SHORT(ROOMS[o.r].floor)} floor · until ${fmtShort(o.st.until)}<br><span class="faint">${hm(o.st.left)} left</span></span><span class="status free">Free</span></button>`).join(""):`<p class="muted" style="margin:0">Nothing is free right now. Try the time preview to see later today.</p>`;
+  let fh="";
+  for(let f=0;f<=7;f++){const rs=all.filter(o=>ROOMS[o.r].b==="IST"&&ROOMS[o.r].floor===f);if(!rs.length)continue;
+    const fr=rs.filter(o=>o.st.cls==="free").length,so=rs.filter(o=>o.st.cls==="soon").length;
+    fh+=`<button class="frow" type="button" data-floorgo="${f}"><b>${FLOOR_SHORT(f)}</b><span class="fb"><i style="width:${100*fr/rs.length}%"></i><i class="s" style="width:${100*so/rs.length}%"></i></span><span>${fr+so} of ${rs.length} free</span></button>`;}
+  $("#ovFloors").innerHTML=fh;$("#ovBuildTime").textContent=clock.real?"Right now":"Preview";
+  $("#ovQuick").innerHTML=[["snow","Find an AC room","AC room for the next hour"],["users","Find a room for 4","Room for 4 people for the next hour"],["quiet","Find a quiet room","Quiet classroom to study for the next 2 hours"],["projector","Find a projector room","Classroom with a projector for the next hour"]].map(([i,l,q])=>`<button type="button" data-q="${q}">${ic(i)}${l}</button>`).join("");
+}
+function renderSuggest(){$$("[data-suggest]").forEach(el=>el.innerHTML=[["snow","AC room","AC room"],["building","Ground floor","on the ground floor"],["users","6+ people","for 6 people"],["clock","Next 2 hours","for the next 2 hours"],["projector","Projector","with a projector"],["quiet","Quiet room","quiet classroom"],["flask","Lab","lab"]].map(([i,l,s])=>`<button class="chip" type="button" data-sug="${s}">${ic(i,"sm")}${l}</button>`).join(""));}
+
+function renderMine(){
+  const c=myClaim(),el=$("#minePage");
+  let h=`<div class="card pad" style="display:flex;flex-direction:column;gap:14px"><div class="eyebrow">My current room</div>`;
+  if(c){const st=statusNow(c.room);
+    h+=`<div class="mine-now"><div><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0;font-size:32px;font-weight:800">${nameOf(c.room)}</h2><span class="status claimed">Claimed</span></div>
+      <p class="muted" style="margin:6px 0 0">${whereText(c.room)} · ${c.squad?esc(c.squad)+" · ":""}until ${fmtUp(c.untilSec/60)}</p>
+      <div style="margin-top:12px;font-size:30px;font-weight:800;letter-spacing:-.01em" data-cd="${c.room}">${hms(c.untilSec-simSec())}</div><div class="faint">remaining before ${st.next?esc(st.next.sec)+" arrives":"the day ends"}</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:200px"><button class="btn pri" type="button" data-viewmap="${c.room}">${ic("map","sm")}Open Map</button><button class="btn wa" type="button" data-squadcall="${c.room}">${WA}Call the Squad</button><button class="btn sec" type="button" data-release>${ic("leave","sm")}Release room</button></div></div>`;
+  }else h+=`<p class="muted" style="margin:0">You haven't claimed a room. Find a free one, claim it, and it shows up here with its countdown.</p><div><button class="btn pri" type="button" data-go="find" data-run-default>${ic("search","sm")}Find a room</button></div>`;
+  h+=`</div><div class="section-h"><h2>Recently viewed</h2>${store.recent.length?`<button class="link" type="button" id="clearRecent">Clear</button>`:""}</div>`;
+  const rec=store.recent.filter(r=>ROOMS[r]);
+  h+=rec.length?`<div class="rgrid">${rec.slice(0,8).map(r=>roomCard(r)).join("")}</div>`:`<div class="card pad muted">Rooms you open show up here.</div>`;
+  el.innerHTML=h;
+  $("#clearRecent")?.addEventListener("click",()=>{store.recent=[];save();renderMine();});
+}
+let squadDay=null;
+function renderSquad(){
+  const el=$("#squadPage"),c=myClaim();squadDay=squadDay||state.day;
+  const secs=[...new Set([store.section,...store.squad.map(m=>m.section)].filter(s=>SECBUSY[s]))];
+  const secOpts=sel=>SECTIONS.map(s=>`<option ${s.id===sel?"selected":""}>${s.id}</option>`).join("");
+  let h=`<div class="card pad" style="display:flex;flex-direction:column;gap:14px"><div class="section-h"><h2>Your squad</h2><span class="faint">${store.squad.length+1} people</span></div>
+    <div class="members"><div class="member">${avatar(store.name||"You")}<div><b>${esc(store.name||"You")} (you)</b><span>${esc(store.section)}</span></div></div>
+    ${store.squad.map((m,i)=>`<div class="member">${avatar(m.name)}<div><b>${esc(m.name)}</b><span>${esc(m.section)}</span></div><button class="xbtn" type="button" data-rmm="${i}" aria-label="Remove ${esc(m.name)}">${ic("x","sm")}</button></div>`).join("")}</div>
+    <form id="addM" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end"><div class="field" style="flex:1 1 160px"><label for="mName">Add member</label><input id="mName" maxlength="24" placeholder="Name"></div><div class="field" style="flex:1 1 160px"><label for="mSec">Section</label><select id="mSec">${secOpts(store.section)}</select></div><button class="btn sec" type="submit">${ic("userPlus","sm")}Add</button></form></div>`;
+  h+=`<div class="card pad" style="display:flex;flex-direction:column;gap:12px"><div class="eyebrow">Current room</div>${c?`<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b style="font-size:22px">${nameOf(c.room)}</b><div class="muted">Claimed until ${fmtUp(c.untilSec/60)} · <span data-remtxt>${hm(c.untilSec/60-nowMin())} left</span></div></div><button class="btn wa" type="button" data-squadcall="${c.room}">${WA}Call the Squad</button></div>`:`<p class="muted" style="margin:0">No room claimed yet. Claim one and your squad gets the message in one tap.</p>`}</div>`;
+  const {busy,wins}=groupFree(secs,squadDay);
+  const span=DAY_END-DAY_START,p=m=>((Math.min(Math.max(m,DAY_START),DAY_END)-DAY_START)/span*100).toFixed(2);
+  const homes=new Set(secs.map(id=>SECTIONS.find(s=>s.id===id)?.home).filter(Boolean));
+  h+=`<div class="card pad" style="display:flex;flex-direction:column;gap:14px"><div class="section-h"><h2>When is everyone free?</h2><div class="chips">${DAYS.map(d=>`<button class="chip" type="button" data-sqday="${d}" aria-pressed="${d===squadDay}">${d}</button>`).join("")}</div></div>
+    <div class="lanes">${secs.map(id=>`<div class="lane"><span class="faint">${id}</span><div class="lb">${SECBUSY[id][squadDay].map(b=>`<i style="left:${p(b.s)}%;width:${(p(b.e)-p(b.s)).toFixed(2)}%"></i>`).join("")}</div></div>`).join("")}
+    <div class="lane all"><b>Everyone free</b><div class="lb">${wins.map(w=>`<i style="left:${p(w.s)}%;width:${(p(w.e)-p(w.s)).toFixed(2)}%"></i>`).join("")}</div></div></div>
+    ${wins.length?wins.map(w=>{const past=squadDay===state.day&&w.e<=nowMin();
+      const cands=TRACKED.filter(r=>ROOMS[r].open&&freeFor(r,squadDay,w.s,w.e)).sort((a,b)=>(homes.has(b)-homes.has(a))||a.localeCompare(b)).slice(0,4);
+      return `<div class="win ${past?"past":""}"><div class="wh"><b>${fmtShort(w.s)} – ${fmtShort(w.e)}</b><span class="faint">${hm(w.e-w.s)} · ${periodSpan(w.s,w.e)||"after classes"}${w.s<800&&w.e>750?" · includes lunch":""}</span></div>
+        ${cands.length?`<div class="alts">${cands.map(r=>`<button class="chip" type="button" data-room="${r}">${nameOf(r)}${homes.has(r)?" · your classroom":""}</button>`).join("")}</div>`:`<span class="faint">No single classroom is free for the whole gap.</span>`}</div>`;}).join(""):`<p class="muted" style="margin:0">No shared gap of 40 minutes or more on ${DAY_NAMES[squadDay]}.</p>`}</div>`;
+  el.innerHTML=h;
+  $("#addM").onsubmit=e=>{e.preventDefault();const n=$("#mName").value.trim();if(!n)return;store.squad.push({name:n.slice(0,24),section:$("#mSec").value});save();logAct("squad",`Added ${n} to the squad`);renderSquad();};
+  $$("[data-rmm]").forEach(b=>b.onclick=()=>{const m=store.squad.splice(+b.dataset.rmm,1)[0];save();logAct("squad",`Removed ${m.name} from the squad`);renderSquad();});
+  $$("[data-sqday]").forEach(b=>b.onclick=()=>{squadDay=b.dataset.sqday;renderSquad();});
+}
+const LOG_ICON={search:"search",claim:"check",release:"leave",call:"send",copy:"copy",dirs:"nav",squad:"users"};
+function renderActivity(){
+  const el=$("#activityPage");const L=store.log;
+  const ago=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?"just now":m<60?m+" min ago":Math.round(m/60)+" h ago";};
+  el.innerHTML=`<div class="card pad">${L.length?`<div class="list">${L.map(a=>`<div class="logrow"><span class="li">${ic(LOG_ICON[a.type]||"activity","sm")}</span><div><b>${esc(a.text)}</b><span>${ago(a.at)}</span></div></div>`).join("")}</div>`:`<p class="muted" style="margin:0">Nothing yet. Search, claim a room or call your squad and it shows up here.</p>`}</div>`;
+}
+function renderHelp(){
+  const notes=[
+    `Built from 10 timetables: ${SECTIONS.map(s=>s.id).join(", ")}. The I-year file holds four sheets.`,
+    `A letter in a section's grid (A, B, C…) means that class sits in the section's home room. A cell like "G-625" or "LAB-108/309" means the class moved to that room, which leaves the home room free.`,
+    `Two bell schedules are used: 2026–27 sheets (9:00–4:50, lunch 12:30–1:20) and the I-year sheet (labelled 2024–25, 9:00–5:05, lunch 12:35–1:30).`,
+    `Floors come from the room number: IST 0xx is the ground floor, 1xx the first floor, and so on. Every floor of the 3D building reuses the hand-drawn 4th-floor layout.`,
+    `Seats, AC, projector and whiteboard are estimates; the timetables don't list them. Labs, the workshop, the seminar hall and CDC rooms are marked "ask staff".`,
+    `Rooms shown in grey on the map aren't in any of the 10 timetables, so Roomly can't tell when they're used.`,
+    `Classes with no room number on the sheet aren't tracked: ${[...UNTRACKED].join(", ")}.`,
+    CLASHES.length?`${CLASHES.length} overlapping bookings between sheets were found (mostly the older I-year sheet reusing IST 602, 510 and 108). Overlaps count as occupied.`:"No overlapping bookings between sheets.",
+    `Claims, your squad and your activity are saved on this device only. WhatsApp opens with a ready message; nothing is sent until you press send.`
+  ];
+  $("#helpPage").innerHTML=`<div class="card pad" style="display:flex;flex-direction:column;gap:14px"><h2 style="margin:0;font-size:20px">How Roomly works</h2>
+    <div class="steps"><div><b>You ask</b>“AC room for 6 people for 2 hours.”</div><div><b>Roomly understands</b>Floor, group size, time and AC become filters.</div><div><b>It reads the timetables</b>Every class in 10 sheets blocks its room.</div><div><b>Rooms by floor</b>Exactly how long each room stays free.</div><div><b>Open the map</b>See it in the 3D building.</div><div><b>Claim &amp; call</b>Mark it yours and WhatsApp your squad.</div></div></div>
+    <div class="card pad" style="display:flex;flex-direction:column;gap:12px"><h2 style="margin:0;font-size:20px">Availability calculated from current timetable data</h2><p class="muted" style="margin:0">Roomly analyzes scheduled classes to work out when each room is expected to be free. A room counts as free only when none of the timetables books it; one-off events and classes from other departments can still turn up.</p><ul class="notes">${notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></div>`;
+}
+function renderSettings(){
+  $("#settingsPage").innerHTML=`<div class="card pad" style="display:flex;flex-direction:column;gap:14px;max-width:560px">
+    <div class="field"><label for="setName">Your name</label><input id="setName" maxlength="24" value="${esc(store.name)}"></div>
+    <div class="field"><label for="setSec">Your section</label><select id="setSec">${SECTIONS.map(s=>`<option ${s.id===store.section?"selected":""}>${s.id}</option>`).join("")}<option ${SECBUSY[store.section]?"":"selected"} value="">My section isn't listed</option></select></div>
+    <p class="note" style="margin:0">Roomly uses your section to show rooms near your next class and to plan squad free time.</p></div>
+    <div class="card pad" style="display:flex;flex-direction:column;gap:10px;max-width:560px"><b>Reset Roomly on this device</b><p class="muted" style="margin:0">Clears your claim, squad, recent rooms and activity.</p><div><button class="btn sec" type="button" id="resetAll">Reset</button></div></div>`;
+  $("#setName").oninput=e=>{store.name=e.target.value.trim();save();renderHeader();};
+  $("#setSec").onchange=e=>{store.section=e.target.value;save();renderHeader();};
+  $("#resetAll").onclick=e=>{if(e.target.dataset.sure){store={...DEF,squad:[...DEF.squad],recent:[],log:[]};save();refreshAll();toast("Roomly was reset on this device","reset");}else{e.target.dataset.sure=1;e.target.textContent="Tap again to confirm";}};
+}
+function renderAll(){
+  renderNav();renderHeader();
+  if(state.page==="overview")renderOverview();
+  if(state.page==="find"){renderUnderstood();renderResults();}
+  if(state.page==="mine")renderMine();
+  if(state.page==="squad")renderSquad();
+  if(state.page==="activity")renderActivity();
+  if(state.page==="help")renderHelp();
+  if(state.page==="settings")renderSettings();
+  renderDetail();
+  window.R3?.update();
+}
+function refreshAll(){renderAll();if($("#drawer").classList.contains("open")&&state.sel)$("#drawer").innerHTML=detailHTML(state.sel);}
+
+/* ---------- one-second tick ---------- */
+let lastSig="",lastMinute=-1;
+function tick(){
+  const s=simSec();
+  $$("[data-cd]").forEach(el=>{const id=el.dataset.cd,st=ROOMS[id]?statusNow(id):null;const c=myClaim();
+    if(c&&c.room===id&&!el.closest(".avail")){el.textContent=hms(c.untilSec-s);return;}
+    if(st&&st.until!=null)el.textContent=hms(st.until*60-s);});
+  $$("[data-bar]").forEach(el=>{const st=statusNow(el.dataset.bar);if(st.cls==="free"||st.cls==="soon")el.style.width=(100*Math.min(1,(st.until*60-s)/Math.max(60,(st.until-st.from)*60)))+"%";});
+  const m=Math.floor(s/60);
+  if(m!==lastMinute){lastMinute=m;$$("[data-rem]").forEach(el=>{const st=statusNow(el.dataset.rem);if(st.cls==="free"||st.cls==="soon")el.textContent=`${hm(st.left)} remaining`;});
+    const c=myClaim();$$("[data-claimrem]").forEach(el=>el.textContent=c?`${hm(c.untilSec/60-nowMin())} remaining`:"");
+    if(clock.real||!state.live)renderHeader();}
+  const sig=TRACKED.map(r=>statusNow(r).cls).join("")+(myClaim()?.room||"");
+  if(sig!==lastSig){const first=!lastSig;lastSig=sig;if(!first)refreshAll();}
+}
+setInterval(tick,1000);
+setInterval(()=>{if(state.live){const before=clock.real;anchor();if(before!==clock.real)refreshAll();}},60000);
+window.addEventListener("resize",()=>{clearTimeout(window.__rz);window.__rz=setTimeout(()=>renderDetail(),150);});
+
+/* ---------- boot ---------- */
+$("#collapseBtn").addEventListener("click",()=>{store.collapsed=!store.collapsed;save();$("#app").classList.toggle("collapsed",store.collapsed);setTimeout(()=>window.R3?.resize(),50);});
+$("#app").classList.toggle("collapsed",!!store.collapsed);
+hydrateIcons();renderSuggest();anchor();
+const EXAMPLE="I need an AC room on the ground floor for me and my team for the next 2 hours.";
+$$('[data-search] input').forEach(i=>i.value=EXAMPLE);
+crit=parseQuery(EXAMPLE);baseCrit={...crit};lastQuery=EXAMPLE;
+window.statusForMap=id=>{const st=statusNow(id);const c=myClaim();return {...st,mine:c&&c.room===id};};
+window.selectRoom=selectRoom;window.hydrateIcons=hydrateIcons;
+setPage((location.hash||"").replace("#","")||"overview");
+window.addEventListener("hashchange",()=>{const p=(location.hash||"").replace("#","");if(p&&p!==state.page)setPage(p);});
+
+</script>
+<script>
+/* =====================================================================
+   ROOMLY — 3D IST building (Ground to 7th), from the hand-drawn 4th floor
+   ===================================================================== */
+(function(){
+const RING=[
+  {p:"01",x:0,z:0,w:10,d:8,door:"S"},{p:"02",x:10,z:0,w:7,d:8,door:"S"},{p:"03",x:17,z:0,w:6,d:8,door:"S"},
+  {p:"04",x:23,z:0,w:4,d:8,door:"S",fac:"Power room",short:"Power"},{p:"05",x:27,z:0,w:4,d:8,door:"S",fac:"Men's WC",short:"WC"},
+  {p:"ST",x:31,z:0,w:5,d:8,stairs:true},
+  {p:"06",x:36,z:0,w:4,d:8,door:"S",fac:"Women's WC",short:"WC"},{p:"07",x:40,z:0,w:7,d:8,door:"S"},{p:"08",x:47,z:0,w:17,d:8,door:"S"},
+  {p:"09",x:56,z:11,w:8,d:14,door:"W"},{p:"10",x:56,z:25,w:8,d:14,door:"W"},{p:"11",x:56,z:39,w:8,d:14,door:"W"},
+  {p:"12",x:59,z:56,w:5,d:8,door:"N",fac:"Utility",short:"Util"},{p:"13",x:55,z:56,w:4,d:8,door:"N",fac:"Women's WC",short:"WC"},
+  {p:"14",x:51,z:56,w:4,d:8,door:"N",fac:"Power room",short:"Power"},{p:"15",x:44,z:56,w:7,d:8,door:"N"},{p:"16",x:37,z:56,w:7,d:8,door:"N"},
+  {p:"17",x:31,z:56,w:6,d:8,door:"N"},{p:"18",x:25,z:56,w:6,d:8,door:"N"},{p:"19",x:19,z:56,w:6,d:8,door:"N"},{p:"20",x:13,z:56,w:6,d:8,door:"N"},
+  {p:"21",x:8,z:56,w:5,d:8,door:"N"},{p:"22",x:4,z:56,w:4,d:8,door:"N",fac:"Men's WC",short:"WC"},{p:"23",x:0,z:56,w:4,d:8,door:"N",fac:"Utility",short:"Util"},
+  {p:"24",x:0,z:42.5,w:8,d:10.5,door:"E"},{p:"25",x:0,z:32,w:8,d:10.5,door:"E"},{p:"26",x:0,z:21.5,w:8,d:10.5,door:"E"},{p:"27",x:0,z:11,w:8,d:10.5,door:"E"}
+];
+const F4_NAMES={"401":["Seminar hall"],"402":["Staff room","Staff",1],"408":["Lab"],"420":["Music room","Music",1],"421":["P.R.","P.R.",1]};
+const CORRIDORS=[[0,8,64,3],[0,53,64,3],[8,11,3,42],[53,11,3,42]];
+const NF=8,FH=4,H=3,OFF=-32,T=.22,DOOR=1.4;
+const stage=document.getElementById("stage"),msg=document.getElementById("stageMsg"),tip=document.getElementById("tip");
+const ftabs=document.getElementById("ftabs");
+if(!window.THREE||!THREE.OrbitControls||!THREE.CSS2DRenderer){msg.textContent="The 3D map couldn't load here. Every room is still in Find a Room.";return;}
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim()||"#999";
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(36,1,.5,900);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+stage.insertBefore(renderer.domElement,stage.firstChild);
+const labels=new THREE.CSS2DRenderer();labels.domElement.className="overlay";stage.insertBefore(labels.domElement,renderer.domElement.nextSibling);
+msg.remove();
+scene.add(new THREE.HemisphereLight(0xffffff,0x80908a,.62));
+const sun=new THREE.DirectionalLight(0xffffff,.55);sun.position.set(-50,110,45);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-60,right:60,top:60,bottom:-60,near:1,far:320});sun.shadow.bias=-.0006;scene.add(sun);
+
+const mats={};const mat=(k,o)=>mats[k]||(mats[k]=new THREE.MeshStandardMaterial(Object.assign({roughness:.9,metalness:0},o||{})));
+const ghost=mat("ghost",{transparent:true,opacity:.06,depthWrite:false});
+function paint(){
+  for(const [k,v] of [["slab","--slab"],["corr","--corr"],["ground","--ground"],["wall","--wall"],["fac","--fac"],["unknown","--unk-map"],["free","--free-map"],["soon","--soon-map"],["busy","--busy-map"],["closed","--unk-map"],["sel","--sel"],["pin","--pri"],["exit","--free"],["ghost","--ink-3"]])mat(k).color.set(css(v));
+}
+function box(parent,w,h,d,m,x,y,z,shadow=true){const g=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);g.position.set(x+OFF,y,z+OFF);g.castShadow=shadow;g.receiveShadow=true;parent.add(g);return g;}
+box(scene,100,.4,100,mat("ground"),32,-.45,32,false);
+
+const floors=[],rooms={},pins={};
+function info(f,r){
+  const id=(f===0?"0":String(f))+r.p;
+  if(r.stairs)return {id:"ST"+f,name:"Stairs",kind:"stairs"};
+  if(ROOMS[id])return {id,name:TYPE_NAME[ROOMS[id].type],kind:"tracked"};
+  if(f===4&&F4_NAMES[id]){const [n,sh,fac]=F4_NAMES[id];return {id,name:n,short:sh,kind:fac?"facility":"room"};}
+  if(r.fac)return {id,name:r.fac,short:r.short,kind:"facility"};
+  return {id,name:"Room",kind:"room"};
+}
+for(let f=0;f<NF;f++){
+  const grp=new THREE.Group(),y0=f*FH,pick=[],lbls=[];scene.add(grp);
+  for(const [x,z,w,d] of [[0,0,64,11],[0,53,64,11],[0,11,11,42],[53,11,11,42]])box(grp,w,.4,d,mat("slab"),x+w/2,y0-.2,z+d/2,f>0);
+  for(const [x,z,w,d] of CORRIDORS)box(grp,w,.05,d,mat("corr"),x+w/2,y0+.03,z+d/2,false);
+  for(const r of RING){
+    const ri=info(f,r),R={...r,...ri,f};rooms[ri.id]=R;
+    if(r.stairs){for(let i=0;i<8;i++){const s=box(grp,r.w-.6,.3*(i+1),r.d/8,mat("fac"),r.x+r.w/2,y0+.15*(i+1),r.z+r.d-(i+.5)*r.d/8);s.userData.room=ri.id;pick.push(s);}}
+    else{
+      const fl=box(grp,r.w-T,.32,r.d-T,mat(ri.kind==="facility"?"fac":"unknown"),r.x+r.w/2,y0+.16,r.z+r.d/2,false);fl.userData.room=ri.id;pick.push(fl);R.plate=fl;
+      const {x,z,w,d}=r,sides={N:[x,z,x+w,z],S:[x,z+d,x+w,z+d],W:[x,z,x,z+d],E:[x+w,z,x+w,z+d]};
+      for(const k in sides){const [x1,z1,x2,z2]=sides[k],hz=z1===z2,len=hz?x2-x1:z2-z1;
+        const segs=r.door===k?[[0,len/2-DOOR/2],[len/2+DOOR/2,len]]:[[0,len]];
+        for(const [a,b] of segs){const m=(a+b)/2;const wm=hz?box(grp,b-a,H,T,mat("wall"),x1+m,y0+H/2,z1):box(grp,T,H,b-a,mat("wall"),x1,y0+H/2,z1+m);wm.userData.room=ri.id;pick.push(wm);}}
+    }
+    const el=document.createElement("div");el.className="lbl"+(ri.kind==="facility"||ri.kind==="stairs"?" minor":"");
+    const o=new THREE.CSS2DObject(el);o.position.set(r.x+r.w/2+OFF,y0+H+.9,r.z+r.d/2+OFF);scene.add(o);R.el=el;R.lbl=o;lbls.push(o);
+  }
+  const ex=box(grp,.4,2.2,2.4,mat("exit"),64.2,y0+1.1,54.5);
+  const exEl=document.createElement("div");exEl.className="lbl exit";exEl.textContent="Exit →";
+  const exO=new THREE.CSS2DObject(exEl);exO.position.set(64.8+OFF,y0+3.2,54.5+OFF);scene.add(exO);lbls.push(exO);
+  const tag=document.createElement("div");tag.className="lbl";tag.textContent=f===0?"Ground":ordinal(f);
+  const tagO=new THREE.CSS2DObject(tag);tagO.position.set(-5+OFF,y0+1.6,62+OFF);scene.add(tagO);
+  const shell=new THREE.Group();for(const [x,z,w,d] of [[0,0,64,8],[0,56,64,8],[0,8,8,48],[56,8,8,48]])box(shell,w,FH-.2,d,ghost,x+w/2,y0+FH/2-.2,z+d/2,false);
+  shell.traverse(o=>{o.castShadow=false;o.receiveShadow=false;});scene.add(shell);
+  floors.push({grp,pick,lbls,tagO,shell});
+}
+const entEl=document.createElement("div");entEl.className="lbl minor";entEl.textContent="Main stairs ↑";
+const entO=new THREE.CSS2DObject(entEl);entO.position.set(33.5+OFF,1,-3+OFF);scene.add(entO);
+
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=.08;controls.maxPolarAngle=1.42;controls.minDistance=20;controls.maxDistance=260;
+let cur=state.mapFloor??4,view="tilt",pickables=[],selId=null;
+
+function renderTabs(){ftabs.innerHTML=[...Array(NF).keys()].map(f=>`<button type="button" data-f="${f}" aria-pressed="${cur===f}">${f===0?"Ground":ordinal(f)}</button>`).join("")+`<button type="button" data-f="all" aria-pressed="${cur==="all"}">All</button>`;}
+ftabs.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;setFloor(b.dataset.f==="all"?"all":+b.dataset.f);});
+function setFloor(f){cur=f;if(f!=="all")state.mapFloor=f;
+  floors.forEach((F,i)=>{const above=cur!=="all"&&i>cur;F.grp.visible=!above;F.shell.visible=above;F.lbls.forEach(o=>o.visible=cur!=="all"&&i===cur);F.tagO.visible=cur==="all";});
+  entO.visible=cur===0;pickables=cur==="all"?[]:floors[cur].pick;renderTabs();setView(view);}
+function setView(v){view=v;const yT=cur==="all"?NF*FH/2:cur*FH;const compact=stage.classList.contains("compact");
+  const P=v==="top"?[0,(compact?120:105)+yT,.01]:cur==="all"?[72,72,112]:compact?[16,56+yT,68]:[18,60+yT,76];
+  const k=Math.max(1,(v==="top"?1.25:1.75)/Math.max(.4,camera.aspect));
+  camera.position.set(P[0]*k,yT+(P[1]-yT)*k,P[2]*k);controls.target.set(0,yT,0);controls.update();update();}
+stage.addEventListener("click",e=>{const z=e.target.closest("[data-zoom]");if(!z)return;const k=z.dataset.zoom;
+  if(k==="reset")setView("tilt");else if(k==="top")setView(view==="top"?"tilt":"top");
+  else{const dir=camera.position.clone().sub(controls.target);const len=dir.length()*(k==="in"?.8:1.25);dir.setLength(Math.min(Math.max(len,controls.minDistance),controls.maxDistance));camera.position.copy(controls.target).add(dir);controls.update();wake();}});
+
+function statusFor(R){return R.kind==="tracked"?window.statusForMap(R.id):null;}
+function update(){
+  paint();
+  for(const id in rooms){const R=rooms[id];
+    if(R.kind==="stairs"){R.el.textContent="Stairs";continue;}
+    if(R.kind==="tracked"){const st=statusFor(R);R.plate.material=mat(id===selId?"sel":st.cls);
+      R.el.className="lbl "+(id===selId?"picked":st.cls);
+      R.el.innerHTML=`${id}<small>${st.mine?"Your squad":st.cls==="busy"?"Busy · "+fmtShort(st.until):st.cls==="closed"?"Closed":hm(st.left)+" left"}</small>`;}
+    else if(R.kind==="facility"){R.el.innerHTML=`${id}<small>${R.short||R.name}</small>`;}
+    else{R.plate.material=mat(id===selId?"sel":"unknown");R.el.className="lbl"+(id===selId?" picked":"");R.el.textContent=id;}
+  }
+  for(const id in pins)pins[id].visible=false;
+  const c=myClaim();
+  if(c&&rooms[c.room]){const R=rooms[c.room];
+    if(!pins[c.room]){const g=new THREE.Group();const cone=new THREE.Mesh(new THREE.ConeGeometry(.9,2.2,20),mat("pin"));cone.rotation.x=Math.PI;cone.position.y=1.1;
+      const ball=new THREE.Mesh(new THREE.SphereGeometry(.95,20,14),mat("pin"));ball.position.y=2.6;g.add(cone,ball);g.traverse(o=>o.castShadow=true);
+      g.position.set(R.x+R.w/2+OFF,R.f*FH+H+1.6,R.z+R.d/2+OFF);scene.add(g);pins[c.room]=g;}
+    pins[c.room].visible=cur==="all"||R.f<=cur;}
+  wake();
+}
+function select(id){selId=id;if(id&&rooms[id]&&rooms[id].f!==cur&&cur!=="all")setFloor(rooms[id].f);else if(id&&rooms[id]&&cur==="all")setFloor(rooms[id].f);else update();}
+
+const ray=new THREE.Raycaster(),ptr=new THREE.Vector2();let hot=null,down=null;
+function pick(ev){const b=renderer.domElement.getBoundingClientRect();ptr.set((ev.clientX-b.left)/b.width*2-1,-(ev.clientY-b.top)/b.height*2+1);
+  ray.setFromCamera(ptr,camera);const h=ray.intersectObjects(pickables,false)[0];return h?h.object.userData.room:null;}
+function showTip(id,ev){
+  if(!id||!rooms[id]||rooms[id].kind==="stairs"){tip.hidden=true;return;}
+  const R=rooms[id];let st="",col="var(--unk)",rem="";
+  if(R.kind==="tracked"){const s=statusFor(R);col=`var(--${s.cls==="closed"?"unk":s.cls})`;st=s.mine?"Claimed by your squad":STATUS_TEXT[s.cls];rem=s.cls==="busy"?`Free at ${fmtUp(s.until)}`:s.cls==="closed"?"":`${hm(s.left)} remaining`;}
+  else if(R.kind==="facility"){st=R.name;}else{st="Unknown";rem="Not in the timetables";}
+  tip.innerHTML=`<b>${nameOf(id)}</b><div class="st" style="color:${col}">${st}</div>${rem?`<div class="faint">${rem}</div>`:""}`;
+  tip.style.left=ev.clientX+"px";tip.style.top=ev.clientY+"px";tip.hidden=false;
+}
+renderer.domElement.addEventListener("pointermove",e=>{if(e.pointerType!=="mouse"||e.buttons)return;const id=pick(e);
+  if(hot!==id){if(hot&&rooms[hot])rooms[hot].el.classList.remove("hot");hot=id;if(id&&rooms[id])rooms[id].el.classList.add("hot");renderer.domElement.style.cursor=id&&rooms[id]?.kind!=="stairs"?"pointer":"grab";}
+  showTip(id,e);});
+renderer.domElement.addEventListener("pointerleave",()=>{tip.hidden=true;});
+renderer.domElement.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY];tip.hidden=true;});
+renderer.domElement.addEventListener("pointerup",e=>{if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>6)return;const id=pick(e);
+  if(id&&rooms[id]&&rooms[id].kind!=="stairs")window.selectRoom(id,{fromMap:true});});
+
+let raf=0,idle=0;
+function frame(){raf=0;if(!stage.isConnected||!stage.offsetParent){return;}const moved=controls.update();renderer.render(scene,camera);labels.render(scene,camera);if(moved||idle++<30)raf=requestAnimationFrame(frame);}
+function wake(){idle=0;if(!raf)raf=requestAnimationFrame(frame);}
+controls.addEventListener("change",wake);
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h);labels.setSize(w,h);camera.aspect=w/h;camera.fov=w<560?50:36;camera.updateProjectionMatrix();setView(view);}
+new ResizeObserver(resize).observe(stage);
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",update);
+new MutationObserver(update).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+window.R3={setFloor,select,update,resize,meta:id=>rooms[id]?{kind:rooms[id].kind,name:rooms[id].name}:null};
+setFloor(cur);resize();
+if(state.sel)select(state.sel);
+})();
+
+</script>
+</body>
+</html>
